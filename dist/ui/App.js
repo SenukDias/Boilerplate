@@ -221,7 +221,10 @@ const App = () => {
             setDownloadStatus(`Fetching files from remote repository...`);
             await setupLabLocally(lab.category, lab.id, lab.files);
             setDownloadStatus('Download complete!');
-            setTimeout(() => prepareConfig(lab), 1000);
+            setDownloadStatus('Download complete!');
+            // Short delay to show success
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            prepareConfig(lab);
         }
         catch (e) {
             setDeployError(`Download failed: ${e.message}`);
@@ -267,6 +270,12 @@ const App = () => {
     return (React.createElement(Box, { flexDirection: "column", padding: 1, borderStyle: "round", borderColor: "green" },
         React.createElement(Header, null),
         view === 'groups' && (React.createElement(Box, { flexDirection: "column" },
+            React.createElement(Box, { marginBottom: 1, borderStyle: "single", borderColor: "cyan", flexDirection: "column", paddingX: 1 },
+                React.createElement(Text, { bold: true, color: "cyan" }, "YOUR ACTIVE APPS:"),
+                React.createElement(Box, { flexDirection: "row", flexWrap: "wrap", marginTop: 0 }, labs.filter(l => fs.existsSync(l.path)).length > 0 ? (labs.filter(l => fs.existsSync(l.path)).map(lab => (React.createElement(Box, { key: lab.id, marginRight: 2 },
+                    React.createElement(Text, { color: "green" },
+                        "\u2714 ",
+                        lab.name))))) : (React.createElement(Text, { dimColor: true, italic: true }, "No apps installed yet.")))),
             React.createElement(Box, { marginBottom: 1 },
                 React.createElement(Text, { bold: true, underline: true }, "Select a Garden Patch:")),
             React.createElement(Box, { flexDirection: "row", flexWrap: "wrap" }, GROUPS.map((group, i) => {
@@ -308,9 +317,12 @@ const App = () => {
                             currentGroupLabs[selectedLabIndex].path),
                         React.createElement(Text, { color: fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "green" : "gray" },
                             "Status: ",
-                            fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "Installed" : "Click Enter to Install")))) : (React.createElement(Text, { dimColor: true }, "Select a tool to see details.")))),
-            React.createElement(Box, { marginTop: 1 },
-                React.createElement(Text, { dimColor: true }, "Esc to Back | Enter to Install/Configure")))),
+                            fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "INSTALLED (Running or Stopped)" : "Not Installed")))) : (React.createElement(Text, { dimColor: true }, "Select a tool to see details.")))),
+            React.createElement(Box, { marginTop: 1 }, currentGroupLabs[selectedLabIndex] && fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? (React.createElement(Text, null,
+                "Esc to Back | ",
+                React.createElement(Text, { color: "yellow", bold: true }, "Enter to RECONFIGURE/DEPLOY"))) : (React.createElement(Text, null,
+                "Esc to Back | ",
+                React.createElement(Text, { color: "green", bold: true }, "Enter to INSTALL")))))),
         view === 'downloading' && (React.createElement(Box, { flexDirection: "column", alignItems: "center", justifyContent: "center", height: 10 },
             React.createElement(Text, { color: "cyan", bold: true }, "Planting Seeds... (Downloading)"),
             React.createElement(Text, null, downloadStatus))),

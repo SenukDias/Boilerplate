@@ -237,7 +237,12 @@ const App = () => {
             setDownloadStatus(`Fetching files from remote repository...`);
             await setupLabLocally(lab.category, lab.id, lab.files);
             setDownloadStatus('Download complete!');
-            setTimeout(() => prepareConfig(lab), 1000);
+            setDownloadStatus('Download complete!');
+
+            // Short delay to show success
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            prepareConfig(lab);
+
         } catch (e: any) {
             setDeployError(`Download failed: ${e.message}`);
             setView('details');
@@ -285,6 +290,21 @@ const App = () => {
             {/* GROUPS VIEW (Garden Cards) */}
             {view === 'groups' && (
                 <Box flexDirection="column">
+                    <Box marginBottom={1} borderStyle="single" borderColor="cyan" flexDirection="column" paddingX={1}>
+                        <Text bold color="cyan">YOUR ACTIVE APPS:</Text>
+                        <Box flexDirection="row" flexWrap="wrap" marginTop={0}>
+                            {labs.filter(l => fs.existsSync(l.path)).length > 0 ? (
+                                labs.filter(l => fs.existsSync(l.path)).map(lab => (
+                                    <Box key={lab.id} marginRight={2}>
+                                        <Text color="green">✔ {lab.name}</Text>
+                                    </Box>
+                                ))
+                            ) : (
+                                <Text dimColor italic>No apps installed yet.</Text>
+                            )}
+                        </Box>
+                    </Box>
+
                     <Box marginBottom={1}>
                         <Text bold underline>Select a Garden Patch:</Text>
                     </Box>
@@ -348,7 +368,7 @@ const App = () => {
                                     <Box marginTop={2}>
                                         <Text dimColor>Path: {currentGroupLabs[selectedLabIndex].path}</Text>
                                         <Text color={fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "green" : "gray"}>
-                                            Status: {fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "Installed" : "Click Enter to Install"}
+                                            Status: {fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "INSTALLED (Running or Stopped)" : "Not Installed"}
                                         </Text>
                                     </Box>
                                 </>
@@ -358,7 +378,12 @@ const App = () => {
                         </Box>
                     </Box>
                     <Box marginTop={1}>
-                        <Text dimColor>Esc to Back | Enter to Install/Configure</Text>
+                        {/* Dynamic Help Text */}
+                        {currentGroupLabs[selectedLabIndex] && fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? (
+                            <Text>Esc to Back | <Text color="yellow" bold>Enter to RECONFIGURE/DEPLOY</Text></Text>
+                        ) : (
+                            <Text>Esc to Back | <Text color="green" bold>Enter to INSTALL</Text></Text>
+                        )}
                     </Box>
                 </Box>
             )}

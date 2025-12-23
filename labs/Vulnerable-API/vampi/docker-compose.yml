@@ -1,9 +1,0 @@
-services:
-  vampi:
-    image: erev0s/vampi:latest
-    container_name: vampi
-    ports:
-      - "5000:5000"
-    restart: unless-stopped
-    environment:
-      - DB_TYPE=datastore_db
