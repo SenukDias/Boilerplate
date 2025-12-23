@@ -1,0 +1,16 @@
+version: "3"
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:latest
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "${WEB_PORT:-8080}:80"
+    environment:
+      TZ: 'America/Chicago'
+      WEBPASSWORD: '${PASSWORD:-admin}'
+    volumes:
+      - './etc-pihole:/etc/pihole'
+      - './etc-dnsmasq.d:/etc/dnsmasq.d'
+    restart: unless-stopped

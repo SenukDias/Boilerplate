@@ -1,0 +1,49 @@
+{
+  "name": "senuks-boilerplate",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.tsx",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SenukDias/Boilerplate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SenukDias/Boilerplate/issues"
+  },
+  "homepage": "https://github.com/SenukDias/Boilerplate#readme",
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "dotenv": "^17.2.3",
+    "ink": "^6.5.1",
+    "ink-big-text": "^2.0.0",
+    "ink-gradient": "^3.0.0",
+    "ink-text-input": "^6.0.0",
+    "js-yaml": "^4.1.1",
+    "meow": "^14.0.0",
+    "pastel": "^4.0.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "@types/ink-big-text": "^1.2.4",
+    "@types/ink-gradient": "^2.0.4",
+    "@types/ink-text-input": "^2.0.5",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^25.0.3",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}
