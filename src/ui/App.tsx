@@ -20,14 +20,122 @@ const FEATURED_IDS = [
     'vaultwarden'
 ];
 
+type GroupConfig = {
+    id: string;
+    label: string;
+    description: string;
+    color: string;
+    icon: string;
+    filter: (lab: Lab) => boolean;
+};
+
+const GROUPS: GroupConfig[] = [
+    {
+        id: 'featured',
+        label: 'FEATURED',
+        description: 'Most popular and essential tools.',
+        color: 'yellow',
+        icon: '★',
+        filter: (l) => FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase())
+    },
+    {
+        id: 'vulnerable',
+        label: 'VULNERABLE LABS',
+        description: 'Security testing environments (Web, API, Red Team).',
+        color: 'red',
+        icon: '🔓',
+        filter: (l) => l.category.startsWith('Vulnerable') || l.category === 'Red-Teaming'
+    },
+    {
+        id: 'monitoring',
+        label: 'MONITORING',
+        description: 'Tools to observe and track your infrastructure.',
+        color: 'cyan',
+        icon: '📈',
+        filter: (l) => l.category === 'Monitoring'
+    },
+    {
+        id: 'security',
+        label: 'SECURITY',
+        description: 'Identity managed, password managers, and more.',
+        color: 'blue',
+        icon: '🛡️',
+        filter: (l) => l.category === 'Security'
+    },
+    {
+        id: 'networking',
+        label: 'NETWORKING',
+        description: 'DNS, Proxies, and connectivity tools.',
+        color: 'green',
+        icon: '🌐',
+        filter: (l) => l.category === 'Networking'
+    },
+    {
+        id: 'automation',
+        label: 'AUTOMATION',
+        description: 'Workflow automation and smart home.',
+        color: 'magenta',
+        icon: '🤖',
+        filter: (l) => l.category === 'Automation'
+    },
+    {
+        id: 'media',
+        label: 'MEDIA',
+        description: 'Streaming and media management.',
+        color: 'magentaBright',
+        icon: '🎬',
+        filter: (l) => l.category === 'Media'
+    },
+    {
+        id: 'cloud',
+        label: 'CLOUD',
+        description: 'File storage and cloud services.',
+        color: 'white',
+        icon: '☁️',
+        filter: (l) => l.category === 'Cloud'
+    },
+    {
+        id: 'dashboard',
+        label: 'DASHBOARD',
+        description: 'Homelab dashboards and startpages.',
+        color: 'redBright',
+        icon: '📊',
+        filter: (l) => l.category === 'Dashboard'
+    },
+    {
+        id: 'development',
+        label: 'DEVELOPMENT',
+        description: 'Git, CI/CD, and coding tools.',
+        color: 'blueBright',
+        icon: '💻',
+        filter: (l) => l.category === 'Development'
+    },
+    {
+        id: 'databases',
+        label: 'DATABASES',
+        description: 'SQL and NoSQL databases.',
+        color: 'yellowBright',
+        icon: '🗄️',
+        filter: (l) => l.category === 'Databases'
+    }
+];
+
 const App = () => {
     const { exit } = useApp();
     const [labs, setLabs] = useState<Lab[]>([]);
-    const [view, setView] = useState<'list' | 'details' | 'downloading' | 'config' | 'deploying' | 'active'>('list');
 
-    // Search & Selection State
+    // View State
+    const [view, setView] = useState<'groups' | 'list' | 'details' | 'downloading' | 'config' | 'deploying' | 'active'>('groups');
+
+    // Group Selection State
+    const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+
+    // List Selection State
+    const [selectedLabIndex, setSelectedLabIndex] = useState(0);
+    const [activeGroup, setActiveGroup] = useState<GroupConfig | null>(null);
+
+    // Search
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectIndex, setSelectIndex] = useState(0);
 
     // Deployment State
     const [selectedLab, setSelectedLab] = useState<Lab | null>(null);
@@ -41,67 +149,71 @@ const App = () => {
         getLabs().then(setLabs);
     }, []);
 
-    // Derived list of processed labs (Featured handling + Filtering)
-    const processedLabs = React.useMemo(() => {
-        let processed = labs.map(l => ({
-            ...l,
-            // Override category for display if featured
-            displayCategory: FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase()) ? 'AAA_FEATURED' : l.category
-        }));
-
+    // Helper: Get labs for current active group
+    const currentGroupLabs = React.useMemo(() => {
+        if (!activeGroup) return [];
+        let filtered = labs.filter(activeGroup.filter);
         if (searchQuery) {
-            processed = processed.filter(l =>
-                l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                l.category.toLowerCase().includes(searchQuery.toLowerCase())
-            );
+            filtered = filtered.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()));
         }
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }, [activeGroup, labs, searchQuery]);
 
-        // Sort: Featured first (AAA_FEATURED), then Category, then Name
-        return processed.sort((a, b) => {
-            if (a.displayCategory < b.displayCategory) return -1;
-            if (a.displayCategory > b.displayCategory) return 1;
-            return a.name.localeCompare(b.name);
-        });
-    }, [labs, searchQuery]);
-
-    useInput((input: string, key: any) => {
+    useInput((input, key) => {
         if (view === 'deploying' || view === 'downloading') return;
 
+        // Global Back Navigation
         if (key.escape) {
             if (view === 'list') {
-                if (searchQuery) setSearchQuery(''); // Clear search first
-                else exit();
+                setView('groups');
+                setSearchQuery('');
+            } else if (view === 'groups') {
+                exit();
+            } else if (view === 'details' || view === 'config') {
+                setView('list');
+            } else {
+                setView('list');
             }
-            else setView('list');
+            return;
         }
 
-        if (view === 'list') {
-            if (key.upArrow) {
-                setSelectIndex(prev => Math.max(0, prev - 1));
-            }
-            if (key.downArrow) {
-                setSelectIndex(prev => Math.min(processedLabs.length - 1, prev + 1));
-            }
+        // --- GROUP VIEW NAVIGATION ---
+        if (view === 'groups') {
+            const columns = 2; // Simple grid
+            if (key.upArrow) setSelectedGroupIndex(prev => Math.max(0, prev - columns));
+            if (key.downArrow) setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + columns));
+            if (key.leftArrow) setSelectedGroupIndex(prev => Math.max(0, prev - 1));
+            if (key.rightArrow) setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + 1));
+
             if (key.return) {
-                if (processedLabs[selectIndex]) {
-                    setSelectedLab(processedLabs[selectIndex]);
-                    setView('details');
-                }
+                setActiveGroup(GROUPS[selectedGroupIndex]);
+                setSelectedLabIndex(0);
+                setView('list');
             }
         }
 
-        if (view === 'details') {
-            if (key.return) { // Install / Configure
-                if (selectedLab) {
-                    if (fs.existsSync(selectedLab.path)) {
-                        // Already exists, go to config
-                        prepareConfig(selectedLab);
+        // --- LIST VIEW NAVIGATION ---
+        if (view === 'list') {
+            if (key.upArrow) setSelectedLabIndex(prev => Math.max(0, prev - 1));
+            if (key.downArrow) setSelectedLabIndex(prev => Math.min(currentGroupLabs.length - 1, prev + 1));
+
+            if (key.return) {
+                if (currentGroupLabs[selectedLabIndex]) {
+                    setSelectedLab(currentGroupLabs[selectedLabIndex]);
+
+                    // Check if installed
+                    const lab = currentGroupLabs[selectedLabIndex];
+                    if (fs.existsSync(lab.path)) {
+                        prepareConfig(lab);
                     } else {
-                        // Need to download
-                        startDownload(selectedLab);
+                        startDownload(lab); // Auto-download on enter if not present
                     }
                 }
             }
+        }
+
+        // --- ACTIVITY VIEW ---
+        if (view === 'active' || view === 'details') {
             if (input === 's' && selectedLab && fs.existsSync(selectedLab.path)) {
                 stopLab(selectedLab.path, (log) => setLogs(prev => [...prev.slice(-50), log]))
                     .then(() => setLogs(prev => [...prev, 'Stopped.']))
@@ -117,12 +229,7 @@ const App = () => {
             setDownloadStatus(`Fetching files from remote repository...`);
             await setupLabLocally(lab.category, lab.id, lab.files);
             setDownloadStatus('Download complete!');
-
-            // Short delay to show success
-            setTimeout(() => {
-                prepareConfig(lab);
-            }, 1000);
-
+            setTimeout(() => prepareConfig(lab), 1000);
         } catch (e: any) {
             setDeployError(`Download failed: ${e.message}`);
             setView('details');
@@ -135,7 +242,6 @@ const App = () => {
         vars.forEach(v => {
             if (existing[v.key]) v.value = existing[v.key];
         });
-
         if (vars.length > 0) {
             setEnvVars(vars);
             setView('config');
@@ -151,145 +257,147 @@ const App = () => {
         setLogs(['Starting deployment...']);
         setContainerStatus([]);
         setDeployError(null);
-
         try {
-            await deployLab(selectedLab.path, values, (log) => {
-                setLogs(prev => [...prev.slice(-50), log.trim()]);
-            });
-
+            await deployLab(selectedLab.path, values, (log) => setLogs(prev => [...prev.slice(-50), log.trim()]));
             const status = await getLabStatus(selectedLab.path);
             setContainerStatus(status);
-
             setView('active');
         } catch (e: any) {
             setDeployError(e.message);
-            setView('details'); // Go back to details to show error
+            setView('details');
         }
     };
 
-    if (labs.length === 0) {
-        return <Text>Loading Labs Catalog...</Text>;
-    }
+    if (labs.length === 0) return <Text>Loading Labs Catalog...</Text>;
 
-    // Render Logic
     return (
         <Box flexDirection="column" padding={1} borderStyle="round" borderColor="green">
             <Header />
 
-            {view === 'list' && (
+            {/* GROUPS VIEW (Garden Cards) */}
+            {view === 'groups' && (
                 <Box flexDirection="column">
-                    <Box borderStyle="single" borderColor="green" marginBottom={1} paddingX={1}>
-                        <Text color="green">Search: </Text>
-                        <TextInput
-                            value={searchQuery}
-                            onChange={(val) => {
-                                setSearchQuery(val);
-                                setSelectIndex(0);
-                            }}
-                            placeholder="Type to filter..."
-                        />
-                    </Box>
-
-                    <Box flexDirection="column" height={15}>
-                        {processedLabs.slice(Math.max(0, selectIndex - 7), Math.max(0, selectIndex - 7) + 15).map((lab, i) => {
-                            // Calculate actual index in the full list
-                            const actualIndex = Math.max(0, selectIndex - 7) + i;
-
-                            // Check for header (if first item or category changed)
-                            const showHeader = actualIndex === 0 || lab.displayCategory !== processedLabs[actualIndex - 1]?.displayCategory;
-
+                    <Text bold underline marginBottom={1}>Select a Garden Patch:</Text>
+                    <Box flexDirection="row" flexWrap="wrap">
+                        {GROUPS.map((group, i) => {
+                            const isSelected = i === selectedGroupIndex;
                             return (
-                                <Box key={lab.id} flexDirection="column">
-                                    {showHeader && (
-                                        <Box marginTop={1} marginBottom={0}>
-                                            <Text underline bold color="yellow">
-                                                {lab.displayCategory === 'AAA_FEATURED' ? '★ FEATURED' : lab.displayCategory}
-                                            </Text>
-                                        </Box>
-                                    )}
-                                    <Box justifyContent="space-between">
-                                        <Text color={actualIndex === selectIndex ? "cyan" : "white"}>
-                                            {actualIndex === selectIndex ? "> " : "  "}
-                                            {lab.name}
+                                <Box
+                                    key={group.id}
+                                    width="50%" // Grid 2 columns
+                                    padding={1}
+                                    borderStyle={isSelected ? "double" : "single"}
+                                    borderColor={isSelected ? group.color : "gray"}
+                                >
+                                    <Box flexDirection="column" marginLeft={1}>
+                                        <Text bold color={group.color}>
+                                            {group.icon} {group.label}
                                         </Text>
-                                        <Text color="dimColor">
-                                            {lab.displayCategory === 'AAA_FEATURED' ? lab.category : ''}
-                                        </Text>
+                                        <Text dimColor>{group.description}</Text>
                                     </Box>
                                 </Box>
-                            );
+                            )
                         })}
                     </Box>
-
-                    <Box marginTop={1}>
-                        <Text dimColor>Arrows to move, Enter to install/select (Total: {processedLabs.length})</Text>
-                    </Box>
+                    <Text dimColor marginTop={1}>Use Arrows to explore, Enter to visit.</Text>
                 </Box>
             )}
 
-            {view === 'details' && selectedLab && (
+            {/* LIST VIEW (Inside a Category) */}
+            {view === 'list' && activeGroup && (
                 <Box flexDirection="column">
-                    <Text bold color="orange">{selectedLab.name}</Text>
-                    <Box borderStyle="single" borderColor="orange" padding={1}>
-                        <Text>{selectedLab.description}</Text>
-                        <Text dimColor>Target Path: {selectedLab.path}</Text>
-                        <Text color={fs.existsSync(selectedLab.path) ? "green" : "yellow"}>
-                            Status: {fs.existsSync(selectedLab.path) ? "Installed" : "Not Installed"}
-                        </Text>
+                    <Box flexDirection="row" borderStyle="single" borderColor={activeGroup.color} marginBottom={1} paddingX={1}>
+                        <Text bold color={activeGroup.color}>{activeGroup.icon} {activeGroup.label}</Text>
+                        <Text>  |  Search: </Text>
+                        <TextInput value={searchQuery} onChange={setSearchQuery} placeholder="Filter..." />
                     </Box>
 
-                    {deployError && <Text color="red" bold>Error: {deployError}</Text>}
+                    <Box flexDirection="row">
+                        {/* LEFT: LIST */}
+                        <Box flexDirection="column" width="40%" marginRight={2} borderStyle="single" borderColor="gray" minHeight={10}>
+                            {currentGroupLabs.map((lab, i) => (
+                                <Box key={lab.id} paddingX={1}>
+                                    <Text color={i === selectedLabIndex ? activeGroup.color : "white"}>
+                                        {i === selectedLabIndex ? "> " : "  "} {lab.name}
+                                    </Text>
+                                </Box>
+                            ))}
+                            {currentGroupLabs.length === 0 && <Text italic dimColor>  No labs found.</Text>}
+                        </Box>
 
-                    <Box marginTop={1}>
-                        <Text inverse color="green"> [ ENTER TO {fs.existsSync(selectedLab.path) ? 'CONFIGURE' : 'INSTALL'} ] </Text>
-                        <Text>  </Text>
-                        {fs.existsSync(selectedLab.path) && <Text inverse color="red"> [ S TO STOP ] </Text>}
+                        {/* RIGHT: DESCRIPTION CARD */}
+                        <Box flexDirection="column" width="60%" borderStyle="round" borderColor={activeGroup.color} padding={1}>
+                            {currentGroupLabs[selectedLabIndex] ? (
+                                <>
+                                    <Text bold underline color={activeGroup.color}>{currentGroupLabs[selectedLabIndex].name}</Text>
+                                    <Box marginTop={1}>
+                                        <Text>{currentGroupLabs[selectedLabIndex].description || "No description available."}</Text>
+                                    </Box>
+                                    <Box marginTop={2}>
+                                        <Text dimColor>Path: {currentGroupLabs[selectedLabIndex].path}</Text>
+                                        <Text color={fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "green" : "gray"}>
+                                            Status: {fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "Installed" : "Click Enter to Install"}
+                                        </Text>
+                                    </Box>
+                                </>
+                            ) : (
+                                <Text dimColor>Select a tool to see details.</Text>
+                            )}
+                        </Box>
                     </Box>
+                    <Text dimColor marginTop={1}>Esc to Back | Enter to Install/Configure</Text>
                 </Box>
             )}
 
+            {/* DOWNLOADING VIEW */}
             {view === 'downloading' && (
                 <Box flexDirection="column" alignItems="center" justifyContent="center" height={10}>
-                    <Text color="cyan" bold>Downloading Lab...</Text>
+                    <Text color="cyan" bold>Planting Seeds... (Downloading)</Text>
                     <Text>{downloadStatus}</Text>
                 </Box>
             )}
 
+            {/* CONFIG VIEW */}
             {view === 'config' && (
-                <EnvForm
-                    vars={envVars}
-                    onSubmit={startDeploy}
-                    onCancel={() => setView('details')}
-                />
+                <EnvForm vars={envVars} onSubmit={startDeploy} onCancel={() => setView('list')} />
             )}
 
+            {/* ACTIVE/DEPLOYING VIEW */}
             {(view === 'deploying' || view === 'active') && (
                 <Box flexDirection="column">
                     <Text color="orange" bold>{view === 'deploying' ? 'Deploying...' : 'Deployment Successful!'}</Text>
-
-                    {view === 'active' && containerStatus.length > 0 && (
-                        <Box flexDirection="column" borderStyle="single" borderColor="cyan" padding={1} marginY={1}>
-                            <Text underline>Service Status:</Text>
-                            {containerStatus.map((c, i) => (
-                                <Box key={i} flexDirection="column" marginTop={1}>
-                                    <Text color="green" bold>✔ {c.name}</Text>
-                                    <Text>  State: {c.state}</Text>
-                                    <Text>  Access: {c.ports || 'Internal Only'}</Text>
-                                </Box>
-                            ))}
+                    {containerStatus.map((c, i) => (
+                        <Box key={i} flexDirection="column" marginTop={1} borderStyle="single" borderColor="green" padding={1}>
+                            <Text color="green" bold>✔ {c.name}</Text>
+                            <Text>Status: {c.state}</Text>
+                            <Text>Ports: {c.ports || 'N/A'}</Text>
                         </Box>
-                    )}
-
-                    <Box borderStyle="single" padding={1} flexDirection="column" borderColor="green" height={10}>
+                    ))}
+                    <Box borderStyle="single" padding={1} flexDirection="column" borderColor="green" height={8} marginTop={1}>
                         <Text underline>Logs:</Text>
-                        {logs.slice(-8).map((log, i) => <Text key={i}>{log}</Text>)}
+                        {logs.slice(-5).map((log, i) => <Text key={i}>{log}</Text>)}
                     </Box>
-
-                    {view === 'active' && <Text dimColor>Press Esc to back</Text>}
+                    <Text dimColor marginTop={1}>Press S to Stop | Esc to Back</Text>
                 </Box>
             )}
+
+            {/* DETAIL VIEW (Error Fallback) */}
+            {view === 'details' && deployError && (
+                <Box flexDirection="column" borderColor="red" borderStyle="double" padding={1}>
+                    <Text bold color="red">Error Occurred:</Text>
+                    <Text>{deployError}</Text>
+                    <Text dimColor>Press Esc to return.</Text>
+                </Box>
+            )}
+
+            {/* RIVER FOOTER */}
+            <Box marginTop={1} flexDirection="column" alignItems="center">
+                <Text color="cyan">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</Text>
+                <Text color="blue">  ~ ~   ~   <Text color="white">🐟</Text>   ~ ~ ~      ~ <Text color="white">🦆</Text> ~      ~ ~ ~   ~ ~    ~ ~   <Text color="white">🛥️</Text>   ~ ~ ~   ~ ~ ~  </Text>
+                <Text color="cyan">~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</Text>
+                <Text color="green"> 🌳  🐞  🌾     🌿    🍄     🌱      🐇      🌼      🌲     🐌     🌱    🦟     🌳 </Text>
+            </Box>
         </Box>
     );
 };
-
 export default App;

@@ -35,25 +35,40 @@ const App = () => {
     useEffect(() => {
         getLabs().then(setLabs);
     }, []);
-    // Derived list of processed labs (Featured handling + Filtering)
+    // Derived list of processed labs (Featured handling + Filtering + Grouping)
     const processedLabs = React.useMemo(() => {
-        let processed = labs.map(l => ({
-            ...l,
-            // Override category for display if featured
-            displayCategory: FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase()) ? 'AAA_FEATURED' : l.category
-        }));
+        let processed = labs.map(l => {
+            let sortKey = '';
+            let displayCat = l.category;
+            // 1. Featured Section
+            if (FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase())) {
+                sortKey = 'A_00';
+                displayCat = '★ FEATURED';
+            }
+            // 2. Vulnerable Section
+            else if (l.category.startsWith('Vulnerable-') || l.category === 'Red-Teaming') {
+                // Group them together, but maintain sub-categories
+                // 'Vulnerable-Web' -> 'B_Web'
+                // 'Red-Teaming' -> 'B_RedTeaming'
+                sortKey = `B_${l.category}`;
+                displayCat = l.category; // e.g. "Vulnerable-Web"
+            }
+            // 3. General Catalog
+            else {
+                sortKey = `C_${l.category}`;
+                displayCat = l.category;
+            }
+            return {
+                ...l,
+                displayCategory: displayCat,
+                sortKey: sortKey + `_${l.name}`
+            };
+        });
         if (searchQuery) {
             processed = processed.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 l.category.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-        // Sort: Featured first (AAA_FEATURED), then Category, then Name
-        return processed.sort((a, b) => {
-            if (a.displayCategory < b.displayCategory)
-                return -1;
-            if (a.displayCategory > b.displayCategory)
-                return 1;
-            return a.name.localeCompare(b.name);
-        });
+        return processed.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
     }, [labs, searchQuery]);
     useInput((input, key) => {
         if (view === 'deploying' || view === 'downloading')
@@ -175,7 +190,7 @@ const App = () => {
                 const showHeader = actualIndex === 0 || lab.displayCategory !== processedLabs[actualIndex - 1]?.displayCategory;
                 return (React.createElement(Box, { key: lab.id, flexDirection: "column" },
                     showHeader && (React.createElement(Box, { marginTop: 1, marginBottom: 0 },
-                        React.createElement(Text, { underline: true, bold: true, color: "yellow" }, lab.displayCategory === 'AAA_FEATURED' ? '★ FEATURED' : lab.displayCategory))),
+                        React.createElement(Text, { underline: true, bold: true, color: lab.displayCategory.includes('FEATURED') ? "yellow" : (lab.displayCategory.startsWith('Vulnerable') || lab.displayCategory === 'Red-Teaming') ? "red" : "green" }, lab.displayCategory.toUpperCase()))),
                     React.createElement(Box, { justifyContent: "space-between" },
                         React.createElement(Text, { color: actualIndex === selectIndex ? "cyan" : "white" },
                             actualIndex === selectIndex ? "> " : "  ",
@@ -228,6 +243,18 @@ const App = () => {
             React.createElement(Box, { borderStyle: "single", padding: 1, flexDirection: "column", borderColor: "green", height: 10 },
                 React.createElement(Text, { underline: true }, "Logs:"),
                 logs.slice(-8).map((log, i) => React.createElement(Text, { key: i }, log))),
-            view === 'active' && React.createElement(Text, { dimColor: true }, "Press Esc to back")))));
+            view === 'active' && React.createElement(Text, { dimColor: true }, "Press Esc to back"))),
+        React.createElement(Box, { marginTop: 1, flexDirection: "column", alignItems: "center" },
+            React.createElement(Text, { color: "cyan" }, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"),
+            React.createElement(Text, { color: "blue" },
+                "  ~ ~   ~   ",
+                React.createElement(Text, { color: "white" }, "\uD83D\uDC1F"),
+                "   ~ ~ ~      ~ ",
+                React.createElement(Text, { color: "white" }, "\uD83E\uDD86"),
+                " ~      ~ ~ ~   ~ ~    ~ ~   ",
+                React.createElement(Text, { color: "white" }, "\uD83D\uDEE5\uFE0F"),
+                "   ~ ~ ~   ~ ~ ~  "),
+            React.createElement(Text, { color: "cyan" }, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"),
+            React.createElement(Text, { color: "green" }, " \uD83C\uDF33  \uD83D\uDC1E  \uD83C\uDF3E     \uD83C\uDF3F    \uD83C\uDF44     \uD83C\uDF31      \uD83D\uDC07      \uD83C\uDF3C      \uD83C\uDF32     \uD83D\uDC0C     \uD83C\uDF31    \uD83E\uDD9F     \uD83C\uDF33 "))));
 };
 export default App;

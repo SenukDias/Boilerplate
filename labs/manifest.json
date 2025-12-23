@@ -324,19 +324,19 @@
     ]
   },
   {
-    "id": "authentik",
-    "name": "Authentik",
-    "category": "Security",
-    "description": "Deploy authentik from Senuk's Boilerplate",
+    "id": "webgoat",
+    "name": "Webgoat",
+    "category": "Red-Teaming",
+    "description": "Deploy webgoat from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
-    "id": "crAPI",
-    "name": "CrAPI",
+    "id": "authentik",
+    "name": "Authentik",
     "category": "Security",
-    "description": "Deploy crAPI from Senuk's Boilerplate",
+    "description": "Deploy authentik from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
@@ -351,19 +351,82 @@
     ]
   },
   {
+    "id": "vaultwarden",
+    "name": "Vaultwarden",
+    "category": "Security",
+    "description": "Deploy vaultwarden from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "crAPI",
+    "name": "CrAPI",
+    "category": "Vulnerable-API",
+    "description": "Deploy crAPI from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "dvga",
+    "name": "Dvga",
+    "category": "Vulnerable-API",
+    "description": "Deploy dvga from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "vampi",
+    "name": "Vampi",
+    "category": "Vulnerable-API",
+    "description": "Deploy vampi from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
     "id": "vapi",
     "name": "Vapi",
-    "category": "Security",
+    "category": "Vulnerable-API",
     "description": "Deploy vapi from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
-    "id": "vaultwarden",
-    "name": "Vaultwarden",
-    "category": "Security",
-    "description": "Deploy vaultwarden from Senuk's Boilerplate",
+    "id": "bwapp",
+    "name": "Bwapp",
+    "category": "Vulnerable-Web",
+    "description": "Deploy bwapp from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "dvwa",
+    "name": "Dvwa",
+    "category": "Vulnerable-Web",
+    "description": "Deploy dvwa from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "juice-shop",
+    "name": "Juice Shop",
+    "category": "Vulnerable-Web",
+    "description": "Deploy juice-shop from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "mutillidae",
+    "name": "Mutillidae",
+    "category": "Vulnerable-Web",
+    "description": "Deploy mutillidae from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
