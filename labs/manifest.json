@@ -3,7 +3,7 @@
     "id": "dockge",
     "name": "Dockge",
     "category": "AI_Other",
-    "description": "Deploy dockge from Senuk's Boilerplate",
+    "description": "A fancy, easy-to-use and reactive self-hosted Docker Compose stack manager.",
     "files": [
       "docker-compose.yml"
     ]
@@ -12,16 +12,16 @@
     "id": "netbox",
     "name": "Netbox",
     "category": "AI_Other",
-    "description": "Deploy netbox from Senuk's Boilerplate",
+    "description": "The premier Source of Truth and IPAM/DCIM tool for network automation.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "openwebui",
-    "name": "Openwebui",
+    "name": "Open WebUI",
     "category": "AI_Other",
-    "description": "Deploy openwebui from Senuk's Boilerplate",
+    "description": "User-friendly WebUI for LLMs (Formerly Ollama WebUI).",
     "files": [
       "docker-compose.yml"
     ]
@@ -30,7 +30,7 @@
     "id": "pangolin",
     "name": "Pangolin",
     "category": "AI_Other",
-    "description": "Deploy pangolin from Senuk's Boilerplate",
+    "description": "A lightweight, modern reverse proxy with a GUI.",
     "files": [
       "docker-compose.yml"
     ]
@@ -39,7 +39,7 @@
     "id": "portainer",
     "name": "Portainer",
     "category": "AI_Other",
-    "description": "Deploy portainer from Senuk's Boilerplate",
+    "description": "Making Docker and Kubernetes management easy.",
     "files": [
       "docker-compose.yml"
     ]
@@ -48,7 +48,7 @@
     "id": "whoami",
     "name": "Whoami",
     "category": "AI_Other",
-    "description": "Deploy whoami from Senuk's Boilerplate",
+    "description": "Tiny Go webserver that prints OS information and HTTP request details.",
     "files": [
       "docker-compose.yml"
     ]
@@ -57,34 +57,25 @@
     "id": "home-assistant",
     "name": "Home Assistant",
     "category": "Automation",
-    "description": "Deploy home-assistant from Senuk's Boilerplate",
-    "files": [
-      "docker-compose.yml"
-    ]
-  },
-  {
-    "id": "homeassistant",
-    "name": "Homeassistant",
-    "category": "Automation",
-    "description": "Deploy homeassistant from Senuk's Boilerplate",
+    "description": "Open source home automation that puts local control and privacy first.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "n8n",
-    "name": "N8n",
+    "name": "n8n",
     "category": "Automation",
-    "description": "Deploy n8n from Senuk's Boilerplate",
+    "description": "Workflow automation for technical people. Fair-code licensed.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "semaphoreui",
-    "name": "Semaphoreui",
+    "name": "Semaphore UI",
     "category": "Automation",
-    "description": "Deploy semaphoreui from Senuk's Boilerplate",
+    "description": "Modern UI for Ansible, Terraform, and other DevOps tools.",
     "files": [
       "docker-compose.yml"
     ]
@@ -93,7 +84,7 @@
     "id": "nextcloud",
     "name": "Nextcloud",
     "category": "Cloud",
-    "description": "Deploy nextcloud from Senuk's Boilerplate",
+    "description": "The self-hosted productivity platform that keeps you in control.",
     "files": [
       "docker-compose.yml"
     ]
@@ -102,7 +93,7 @@
     "id": "homepage",
     "name": "Homepage",
     "category": "Dashboard",
-    "description": "Deploy homepage from Senuk's Boilerplate",
+    "description": "A modern, secure, highly customizable application dashboard.",
     "files": [
       "docker-compose.yml"
     ]
@@ -111,25 +102,25 @@
     "id": "homer",
     "name": "Homer",
     "category": "Dashboard",
-    "description": "Deploy homer from Senuk's Boilerplate",
+    "description": "A very simple, static, dummy-safe homepage for your server.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "mariadb",
-    "name": "Mariadb",
+    "name": "MariaDB",
     "category": "Databases",
-    "description": "Deploy mariadb from Senuk's Boilerplate",
+    "description": "One of the most popular open source relational databases.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "postgres",
-    "name": "Postgres",
+    "name": "PostgreSQL",
     "category": "Databases",
-    "description": "Deploy postgres from Senuk's Boilerplate",
+    "description": "The World's Most Advanced Open Source Relational Database.",
     "files": [
       "docker-compose.yml"
     ]
@@ -138,25 +129,25 @@
     "id": "gitea",
     "name": "Gitea",
     "category": "Development",
-    "description": "Deploy gitea from Senuk's Boilerplate",
+    "description": "Git with a cup of tea. A painless self-hosted Git service.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "gitlab",
-    "name": "Gitlab",
+    "name": "GitLab",
     "category": "Development",
-    "description": "Deploy gitlab from Senuk's Boilerplate",
+    "description": "The DevOps platform aimed at the entire software development lifecycle.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "gitlab-runner",
-    "name": "Gitlab Runner",
+    "name": "GitLab Runner",
     "category": "Development",
-    "description": "Deploy gitlab-runner from Senuk's Boilerplate",
+    "description": "The open source project that runs your jobs and sends the results back to GitLab.",
     "files": [
       "docker-compose.yml"
     ]
@@ -165,7 +156,7 @@
     "id": "renovate",
     "name": "Renovate",
     "category": "Development",
-    "description": "Deploy renovate from Senuk's Boilerplate",
+    "description": "Universal dependency update tool that fits into your workflows.",
     "files": [
       "docker-compose.yml"
     ]
@@ -174,16 +165,16 @@
     "id": "jellyfin",
     "name": "Jellyfin",
     "category": "Media",
-    "description": "Deploy jellyfin from Senuk's Boilerplate",
+    "description": "The Free Software Media System. Put you in control of managing and streaming your media.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "alloy",
-    "name": "Alloy",
+    "name": "Generic Alloy",
     "category": "Monitoring",
-    "description": "Deploy alloy from Senuk's Boilerplate",
+    "description": "OpenTelemetry Collector distribution with a programmable configuration.",
     "files": [
       "docker-compose.yml"
     ]
@@ -192,7 +183,7 @@
     "id": "checkmk",
     "name": "Checkmk",
     "category": "Monitoring",
-    "description": "Deploy checkmk from Senuk's Boilerplate",
+    "description": "Comprehensive IT monitoring solution for servers, networks, and applications.",
     "files": [
       "docker-compose.yml"
     ]
@@ -201,16 +192,16 @@
     "id": "grafana",
     "name": "Grafana",
     "category": "Monitoring",
-    "description": "Deploy grafana from Senuk's Boilerplate",
+    "description": "The open observability platform. Visualize metrics, logs, and traces.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "influxdb",
-    "name": "Influxdb",
+    "name": "InfluxDB",
     "category": "Monitoring",
-    "description": "Deploy influxdb from Senuk's Boilerplate",
+    "description": "Purpose-built time series database for metrics and events.",
     "files": [
       "docker-compose.yml"
     ]
@@ -219,16 +210,7 @@
     "id": "loki",
     "name": "Loki",
     "category": "Monitoring",
-    "description": "Deploy loki from Senuk's Boilerplate",
-    "files": [
-      "docker-compose.yml"
-    ]
-  },
-  {
-    "id": "portainer",
-    "name": "Portainer",
-    "category": "Monitoring",
-    "description": "Deploy portainer from Senuk's Boilerplate",
+    "description": "Horizontally-scalable, highly-available, multi-tenant log aggregation system.",
     "files": [
       "docker-compose.yml"
     ]
@@ -237,7 +219,7 @@
     "id": "prometheus",
     "name": "Prometheus",
     "category": "Monitoring",
-    "description": "Deploy prometheus from Senuk's Boilerplate",
+    "description": "Power your metrics and alerting with a leading open-source monitoring solution.",
     "files": [
       "docker-compose.yml"
     ]
@@ -246,34 +228,25 @@
     "id": "uptime-kuma",
     "name": "Uptime Kuma",
     "category": "Monitoring",
-    "description": "Deploy uptime-kuma from Senuk's Boilerplate",
-    "files": [
-      "docker-compose.yml"
-    ]
-  },
-  {
-    "id": "uptimekuma",
-    "name": "Uptimekuma",
-    "category": "Monitoring",
-    "description": "Deploy uptimekuma from Senuk's Boilerplate",
+    "description": "A fancy self-hosted monitoring tool.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "adguardhome",
-    "name": "Adguardhome",
+    "name": "AdGuard Home",
     "category": "Networking",
-    "description": "Deploy adguardhome from Senuk's Boilerplate",
+    "description": "Network-wide ads & trackers blocking DNS server.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "bind9",
-    "name": "Bind9",
+    "name": "BIND 9",
     "category": "Networking",
-    "description": "Deploy bind9 from Senuk's Boilerplate",
+    "description": "The most widely used Domain Name System (DNS) software.",
     "files": [
       "docker-compose.yml"
     ]
@@ -282,7 +255,7 @@
     "id": "nginx",
     "name": "Nginx",
     "category": "Networking",
-    "description": "Deploy nginx from Senuk's Boilerplate",
+    "description": "High Performance Load Balancer, Web Server & Reverse Proxy.",
     "files": [
       "docker-compose.yml"
     ]
@@ -291,16 +264,16 @@
     "id": "nginx-proxy-manager",
     "name": "Nginx Proxy Manager",
     "category": "Networking",
-    "description": "Deploy nginx-proxy-manager from Senuk's Boilerplate",
+    "description": "Docker container for managing Nginx proxy hosts with a simple, powerful interface.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "pihole",
-    "name": "Pihole",
+    "name": "Pi-hole",
     "category": "Networking",
-    "description": "Deploy pihole from Senuk's Boilerplate",
+    "description": "Network-wide Ad Blocking. A black hole for Internet advertisements.",
     "files": [
       "docker-compose.yml"
     ]
@@ -309,7 +282,7 @@
     "id": "traefik",
     "name": "Traefik",
     "category": "Networking",
-    "description": "Deploy traefik from Senuk's Boilerplate",
+    "description": "The Cloud Native Application Proxy.",
     "files": [
       "docker-compose.yml"
     ]
@@ -318,16 +291,16 @@
     "id": "twingate-connector",
     "name": "Twingate Connector",
     "category": "Networking",
-    "description": "Deploy twingate-connector from Senuk's Boilerplate",
+    "description": "Secure remote access for your private resources.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "webgoat",
-    "name": "Webgoat",
+    "name": "WebGoat",
     "category": "Red-Teaming",
-    "description": "Deploy webgoat from Senuk's Boilerplate",
+    "description": "A deliberately insecure application to test vulnerabilities.",
     "files": [
       "docker-compose.yml"
     ]
@@ -336,7 +309,7 @@
     "id": "authentik",
     "name": "Authentik",
     "category": "Security",
-    "description": "Deploy authentik from Senuk's Boilerplate",
+    "description": "The authentication glue you need. SSO, IAM and more.",
     "files": [
       "docker-compose.yml"
     ]
@@ -345,7 +318,7 @@
     "id": "passbolt",
     "name": "Passbolt",
     "category": "Security",
-    "description": "Deploy passbolt from Senuk's Boilerplate",
+    "description": "Open source password manager for teams.",
     "files": [
       "docker-compose.yml"
     ]
@@ -354,61 +327,61 @@
     "id": "vaultwarden",
     "name": "Vaultwarden",
     "category": "Security",
-    "description": "Deploy vaultwarden from Senuk's Boilerplate",
+    "description": "Unofficial Bitwarden compatible server written in Rust.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "crAPI",
-    "name": "CrAPI",
+    "name": "crAPI",
     "category": "Vulnerable-API",
-    "description": "Deploy crAPI from Senuk's Boilerplate",
+    "description": "Completely Ridiculous API - for learning API security.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "dvga",
-    "name": "Dvga",
+    "name": "DVGA",
     "category": "Vulnerable-API",
-    "description": "Deploy dvga from Senuk's Boilerplate",
+    "description": "Damn Vulnerable GraphQL Application.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "vampi",
-    "name": "Vampi",
+    "name": "VAmPI",
     "category": "Vulnerable-API",
-    "description": "Deploy vampi from Senuk's Boilerplate",
+    "description": "Vulnerable API with Python implementation.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "vapi",
-    "name": "Vapi",
+    "name": "vAPI",
     "category": "Vulnerable-API",
-    "description": "Deploy vapi from Senuk's Boilerplate",
+    "description": "Vulnerable API primarily for OWASP Top 10 learning.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "bwapp",
-    "name": "Bwapp",
+    "name": "bWAPP",
     "category": "Vulnerable-Web",
-    "description": "Deploy bwapp from Senuk's Boilerplate",
+    "description": "A buggy web application. Free and open source.",
     "files": [
       "docker-compose.yml"
     ]
   },
   {
     "id": "dvwa",
-    "name": "Dvwa",
+    "name": "DVWA",
     "category": "Vulnerable-Web",
-    "description": "Deploy dvwa from Senuk's Boilerplate",
+    "description": "Damn Vulnerable Web App.",
     "files": [
       "docker-compose.yml"
     ]
@@ -417,7 +390,7 @@
     "id": "juice-shop",
     "name": "Juice Shop",
     "category": "Vulnerable-Web",
-    "description": "Deploy juice-shop from Senuk's Boilerplate",
+    "description": "OWASP Juice Shop: Probably the most modern and sophisticated insecure web application.",
     "files": [
       "docker-compose.yml"
     ]
@@ -426,7 +399,7 @@
     "id": "mutillidae",
     "name": "Mutillidae",
     "category": "Vulnerable-Web",
-    "description": "Deploy mutillidae from Senuk's Boilerplate",
+    "description": "Free, open source, deliberately vulnerable web-application.",
     "files": [
       "docker-compose.yml"
     ]

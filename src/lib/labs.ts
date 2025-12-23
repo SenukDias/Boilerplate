@@ -26,22 +26,22 @@ const USER_HOME_LABS = path.join(os.homedir(), 'Documents', 'Boilerplate');
 import os from 'os';
 
 export const getLabs = async (): Promise<Lab[]> => {
-    // 1. Try to fetch remote manifest
-    try {
-        const remoteLabs = await fetchRemoteManifest();
-        return remoteLabs.map(transformToLab);
-    } catch (e) {
-        // console.error("Failed to fetch remote manifest, trying local fallback...");
-    }
-
-    // 2. Fallback to local manifest (Dev Mode / Offline)
+    // 1. Try Local Manifest (Priority for development/local usage)
     if (fs.existsSync(LOCAL_MANIFEST_PATH)) {
         try {
             const localData = JSON.parse(fs.readFileSync(LOCAL_MANIFEST_PATH, 'utf-8'));
             return localData.map(transformToLab);
         } catch (e) {
-            console.error("Failed to parse local manifest");
+            console.error("Failed to parse local manifest:", e);
         }
+    }
+
+    // 2. Fallback to Remote Manifest
+    try {
+        const remoteLabs = await fetchRemoteManifest();
+        return remoteLabs.map(transformToLab);
+    } catch (e) {
+        // console.error("Failed to fetch remote manifest");
     }
 
     return [];

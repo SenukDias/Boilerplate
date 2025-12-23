@@ -117,6 +117,14 @@ const GROUPS: GroupConfig[] = [
         color: 'yellowBright',
         icon: '🗄️',
         filter: (l) => l.category === 'Databases'
+    },
+    {
+        id: 'ai-utils',
+        label: 'AI & UTILITIES',
+        description: 'AI models and general utilities.',
+        color: 'white',
+        icon: '🔮',
+        filter: (l) => l.category === 'AI_Other'
     }
 ];
 
@@ -277,7 +285,9 @@ const App = () => {
             {/* GROUPS VIEW (Garden Cards) */}
             {view === 'groups' && (
                 <Box flexDirection="column">
-                    <Text bold underline marginBottom={1}>Select a Garden Patch:</Text>
+                    <Box marginBottom={1}>
+                        <Text bold underline>Select a Garden Patch:</Text>
+                    </Box>
                     <Box flexDirection="row" flexWrap="wrap">
                         {GROUPS.map((group, i) => {
                             const isSelected = i === selectedGroupIndex;
@@ -299,7 +309,9 @@ const App = () => {
                             )
                         })}
                     </Box>
-                    <Text dimColor marginTop={1}>Use Arrows to explore, Enter to visit.</Text>
+                    <Box marginTop={1}>
+                        <Text dimColor>Use Arrows to explore, Enter to visit.</Text>
+                    </Box>
                 </Box>
             )}
 
@@ -345,7 +357,9 @@ const App = () => {
                             )}
                         </Box>
                     </Box>
-                    <Text dimColor marginTop={1}>Esc to Back | Enter to Install/Configure</Text>
+                    <Box marginTop={1}>
+                        <Text dimColor>Esc to Back | Enter to Install/Configure</Text>
+                    </Box>
                 </Box>
             )}
 
@@ -377,7 +391,9 @@ const App = () => {
                         <Text underline>Logs:</Text>
                         {logs.slice(-5).map((log, i) => <Text key={i}>{log}</Text>)}
                     </Box>
-                    <Text dimColor marginTop={1}>Press S to Stop | Esc to Back</Text>
+                    <Box marginTop={1}>
+                        <Text dimColor>Press S to Stop | Esc to Back</Text>
+                    </Box>
                 </Box>
             )}
 

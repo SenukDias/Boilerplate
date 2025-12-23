@@ -49,8 +49,8 @@ const EnvForm = ({ vars, onSubmit, onCancel }) => {
             React.createElement(Box, { borderStyle: "single", borderColor: i === focusedIndex ? "green" : "gray", marginLeft: 2 },
                 React.createElement(Text, { color: values[v.key] ? "white" : "gray" }, values[v.key] || (v.defaultValue ? `${v.defaultValue} (default)` : ' '))),
             i === focusedIndex && v.defaultValue && (React.createElement(Box, { marginLeft: 2 },
-                React.createElement(Text, { dimColor: true },
-                    "Default: ",
+                React.createElement(Text, { color: "cyan" },
+                    "\u2728 Magic Value: ",
                     v.defaultValue)))))),
         React.createElement(Box, { marginTop: 2, justifyContent: "center" },
             React.createElement(Text, { color: focusedIndex === vars.length ? "black" : "green", backgroundColor: focusedIndex === vars.length ? "green" : undefined }, "[ DEPLOY NOW ]"))));

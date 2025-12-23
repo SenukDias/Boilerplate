@@ -18,13 +18,116 @@ const FEATURED_IDS = [
     'nginx-proxy-manager',
     'vaultwarden'
 ];
+const GROUPS = [
+    {
+        id: 'featured',
+        label: 'FEATURED',
+        description: 'Most popular and essential tools.',
+        color: 'yellow',
+        icon: '★',
+        filter: (l) => FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase())
+    },
+    {
+        id: 'vulnerable',
+        label: 'VULNERABLE LABS',
+        description: 'Security testing environments (Web, API, Red Team).',
+        color: 'red',
+        icon: '🔓',
+        filter: (l) => l.category.startsWith('Vulnerable') || l.category === 'Red-Teaming'
+    },
+    {
+        id: 'monitoring',
+        label: 'MONITORING',
+        description: 'Tools to observe and track your infrastructure.',
+        color: 'cyan',
+        icon: '📈',
+        filter: (l) => l.category === 'Monitoring'
+    },
+    {
+        id: 'security',
+        label: 'SECURITY',
+        description: 'Identity managed, password managers, and more.',
+        color: 'blue',
+        icon: '🛡️',
+        filter: (l) => l.category === 'Security'
+    },
+    {
+        id: 'networking',
+        label: 'NETWORKING',
+        description: 'DNS, Proxies, and connectivity tools.',
+        color: 'green',
+        icon: '🌐',
+        filter: (l) => l.category === 'Networking'
+    },
+    {
+        id: 'automation',
+        label: 'AUTOMATION',
+        description: 'Workflow automation and smart home.',
+        color: 'magenta',
+        icon: '🤖',
+        filter: (l) => l.category === 'Automation'
+    },
+    {
+        id: 'media',
+        label: 'MEDIA',
+        description: 'Streaming and media management.',
+        color: 'magentaBright',
+        icon: '🎬',
+        filter: (l) => l.category === 'Media'
+    },
+    {
+        id: 'cloud',
+        label: 'CLOUD',
+        description: 'File storage and cloud services.',
+        color: 'white',
+        icon: '☁️',
+        filter: (l) => l.category === 'Cloud'
+    },
+    {
+        id: 'dashboard',
+        label: 'DASHBOARD',
+        description: 'Homelab dashboards and startpages.',
+        color: 'redBright',
+        icon: '📊',
+        filter: (l) => l.category === 'Dashboard'
+    },
+    {
+        id: 'development',
+        label: 'DEVELOPMENT',
+        description: 'Git, CI/CD, and coding tools.',
+        color: 'blueBright',
+        icon: '💻',
+        filter: (l) => l.category === 'Development'
+    },
+    {
+        id: 'databases',
+        label: 'DATABASES',
+        description: 'SQL and NoSQL databases.',
+        color: 'yellowBright',
+        icon: '🗄️',
+        filter: (l) => l.category === 'Databases'
+    },
+    {
+        id: 'ai-utils',
+        label: 'AI & UTILITIES',
+        description: 'AI models and general utilities.',
+        color: 'white',
+        icon: '🔮',
+        filter: (l) => l.category === 'AI_Other'
+    }
+];
 const App = () => {
     const { exit } = useApp();
     const [labs, setLabs] = useState([]);
-    const [view, setView] = useState('list');
-    // Search & Selection State
+    // View State
+    const [view, setView] = useState('groups');
+    // Group Selection State
+    const [selectedGroupIndex, setSelectedGroupIndex] = useState(0);
+    // List Selection State
+    const [selectedLabIndex, setSelectedLabIndex] = useState(0);
+    const [activeGroup, setActiveGroup] = useState(null);
+    // Search
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectIndex, setSelectIndex] = useState(0);
     // Deployment State
     const [selectedLab, setSelectedLab] = useState(null);
     const [envVars, setEnvVars] = useState([]);
@@ -35,81 +138,75 @@ const App = () => {
     useEffect(() => {
         getLabs().then(setLabs);
     }, []);
-    // Derived list of processed labs (Featured handling + Filtering + Grouping)
-    const processedLabs = React.useMemo(() => {
-        let processed = labs.map(l => {
-            let sortKey = '';
-            let displayCat = l.category;
-            // 1. Featured Section
-            if (FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase())) {
-                sortKey = 'A_00';
-                displayCat = '★ FEATURED';
-            }
-            // 2. Vulnerable Section
-            else if (l.category.startsWith('Vulnerable-') || l.category === 'Red-Teaming') {
-                // Group them together, but maintain sub-categories
-                // 'Vulnerable-Web' -> 'B_Web'
-                // 'Red-Teaming' -> 'B_RedTeaming'
-                sortKey = `B_${l.category}`;
-                displayCat = l.category; // e.g. "Vulnerable-Web"
-            }
-            // 3. General Catalog
-            else {
-                sortKey = `C_${l.category}`;
-                displayCat = l.category;
-            }
-            return {
-                ...l,
-                displayCategory: displayCat,
-                sortKey: sortKey + `_${l.name}`
-            };
-        });
+    // Helper: Get labs for current active group
+    const currentGroupLabs = React.useMemo(() => {
+        if (!activeGroup)
+            return [];
+        let filtered = labs.filter(activeGroup.filter);
         if (searchQuery) {
-            processed = processed.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                l.category.toLowerCase().includes(searchQuery.toLowerCase()));
+            filtered = filtered.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()));
         }
-        return processed.sort((a, b) => a.sortKey.localeCompare(b.sortKey));
-    }, [labs, searchQuery]);
+        return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    }, [activeGroup, labs, searchQuery]);
     useInput((input, key) => {
         if (view === 'deploying' || view === 'downloading')
             return;
+        // Global Back Navigation
         if (key.escape) {
             if (view === 'list') {
-                if (searchQuery)
-                    setSearchQuery(''); // Clear search first
-                else
-                    exit();
+                setView('groups');
+                setSearchQuery('');
             }
-            else
+            else if (view === 'groups') {
+                exit();
+            }
+            else if (view === 'details' || view === 'config') {
                 setView('list');
+            }
+            else {
+                setView('list');
+            }
+            return;
         }
-        if (view === 'list') {
-            if (key.upArrow) {
-                setSelectIndex(prev => Math.max(0, prev - 1));
-            }
-            if (key.downArrow) {
-                setSelectIndex(prev => Math.min(processedLabs.length - 1, prev + 1));
-            }
+        // --- GROUP VIEW NAVIGATION ---
+        if (view === 'groups') {
+            const columns = 2; // Simple grid
+            if (key.upArrow)
+                setSelectedGroupIndex(prev => Math.max(0, prev - columns));
+            if (key.downArrow)
+                setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + columns));
+            if (key.leftArrow)
+                setSelectedGroupIndex(prev => Math.max(0, prev - 1));
+            if (key.rightArrow)
+                setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + 1));
             if (key.return) {
-                if (processedLabs[selectIndex]) {
-                    setSelectedLab(processedLabs[selectIndex]);
-                    setView('details');
-                }
+                setActiveGroup(GROUPS[selectedGroupIndex]);
+                setSelectedLabIndex(0);
+                setView('list');
             }
         }
-        if (view === 'details') {
-            if (key.return) { // Install / Configure
-                if (selectedLab) {
-                    if (fs.existsSync(selectedLab.path)) {
-                        // Already exists, go to config
-                        prepareConfig(selectedLab);
+        // --- LIST VIEW NAVIGATION ---
+        if (view === 'list') {
+            if (key.upArrow)
+                setSelectedLabIndex(prev => Math.max(0, prev - 1));
+            if (key.downArrow)
+                setSelectedLabIndex(prev => Math.min(currentGroupLabs.length - 1, prev + 1));
+            if (key.return) {
+                if (currentGroupLabs[selectedLabIndex]) {
+                    setSelectedLab(currentGroupLabs[selectedLabIndex]);
+                    // Check if installed
+                    const lab = currentGroupLabs[selectedLabIndex];
+                    if (fs.existsSync(lab.path)) {
+                        prepareConfig(lab);
                     }
                     else {
-                        // Need to download
-                        startDownload(selectedLab);
+                        startDownload(lab); // Auto-download on enter if not present
                     }
                 }
             }
+        }
+        // --- ACTIVITY VIEW ---
+        if (view === 'active' || view === 'details') {
             if (input === 's' && selectedLab && fs.existsSync(selectedLab.path)) {
                 stopLab(selectedLab.path, (log) => setLogs(prev => [...prev.slice(-50), log]))
                     .then(() => setLogs(prev => [...prev, 'Stopped.']))
@@ -124,10 +221,7 @@ const App = () => {
             setDownloadStatus(`Fetching files from remote repository...`);
             await setupLabLocally(lab.category, lab.id, lab.files);
             setDownloadStatus('Download complete!');
-            // Short delay to show success
-            setTimeout(() => {
-                prepareConfig(lab);
-            }, 1000);
+            setTimeout(() => prepareConfig(lab), 1000);
         }
         catch (e) {
             setDeployError(`Download failed: ${e.message}`);
@@ -158,92 +252,90 @@ const App = () => {
         setContainerStatus([]);
         setDeployError(null);
         try {
-            await deployLab(selectedLab.path, values, (log) => {
-                setLogs(prev => [...prev.slice(-50), log.trim()]);
-            });
+            await deployLab(selectedLab.path, values, (log) => setLogs(prev => [...prev.slice(-50), log.trim()]));
             const status = await getLabStatus(selectedLab.path);
             setContainerStatus(status);
             setView('active');
         }
         catch (e) {
             setDeployError(e.message);
-            setView('details'); // Go back to details to show error
+            setView('details');
         }
     };
-    if (labs.length === 0) {
+    if (labs.length === 0)
         return React.createElement(Text, null, "Loading Labs Catalog...");
-    }
-    // Render Logic
     return (React.createElement(Box, { flexDirection: "column", padding: 1, borderStyle: "round", borderColor: "green" },
         React.createElement(Header, null),
-        view === 'list' && (React.createElement(Box, { flexDirection: "column" },
-            React.createElement(Box, { borderStyle: "single", borderColor: "green", marginBottom: 1, paddingX: 1 },
-                React.createElement(Text, { color: "green" }, "Search: "),
-                React.createElement(TextInput, { value: searchQuery, onChange: (val) => {
-                        setSearchQuery(val);
-                        setSelectIndex(0);
-                    }, placeholder: "Type to filter..." })),
-            React.createElement(Box, { flexDirection: "column", height: 15 }, processedLabs.slice(Math.max(0, selectIndex - 7), Math.max(0, selectIndex - 7) + 15).map((lab, i) => {
-                // Calculate actual index in the full list
-                const actualIndex = Math.max(0, selectIndex - 7) + i;
-                // Check for header (if first item or category changed)
-                const showHeader = actualIndex === 0 || lab.displayCategory !== processedLabs[actualIndex - 1]?.displayCategory;
-                return (React.createElement(Box, { key: lab.id, flexDirection: "column" },
-                    showHeader && (React.createElement(Box, { marginTop: 1, marginBottom: 0 },
-                        React.createElement(Text, { underline: true, bold: true, color: lab.displayCategory.includes('FEATURED') ? "yellow" : (lab.displayCategory.startsWith('Vulnerable') || lab.displayCategory === 'Red-Teaming') ? "red" : "green" }, lab.displayCategory.toUpperCase()))),
-                    React.createElement(Box, { justifyContent: "space-between" },
-                        React.createElement(Text, { color: actualIndex === selectIndex ? "cyan" : "white" },
-                            actualIndex === selectIndex ? "> " : "  ",
-                            lab.name),
-                        React.createElement(Text, { color: "dimColor" }, lab.displayCategory === 'AAA_FEATURED' ? lab.category : ''))));
+        view === 'groups' && (React.createElement(Box, { flexDirection: "column" },
+            React.createElement(Box, { marginBottom: 1 },
+                React.createElement(Text, { bold: true, underline: true }, "Select a Garden Patch:")),
+            React.createElement(Box, { flexDirection: "row", flexWrap: "wrap" }, GROUPS.map((group, i) => {
+                const isSelected = i === selectedGroupIndex;
+                return (React.createElement(Box, { key: group.id, width: "50%" // Grid 2 columns
+                    , padding: 1, borderStyle: isSelected ? "double" : "single", borderColor: isSelected ? group.color : "gray" },
+                    React.createElement(Box, { flexDirection: "column", marginLeft: 1 },
+                        React.createElement(Text, { bold: true, color: group.color },
+                            group.icon,
+                            " ",
+                            group.label),
+                        React.createElement(Text, { dimColor: true }, group.description))));
             })),
             React.createElement(Box, { marginTop: 1 },
-                React.createElement(Text, { dimColor: true },
-                    "Arrows to move, Enter to install/select (Total: ",
-                    processedLabs.length,
-                    ")")))),
-        view === 'details' && selectedLab && (React.createElement(Box, { flexDirection: "column" },
-            React.createElement(Text, { bold: true, color: "orange" }, selectedLab.name),
-            React.createElement(Box, { borderStyle: "single", borderColor: "orange", padding: 1 },
-                React.createElement(Text, null, selectedLab.description),
-                React.createElement(Text, { dimColor: true },
-                    "Target Path: ",
-                    selectedLab.path),
-                React.createElement(Text, { color: fs.existsSync(selectedLab.path) ? "green" : "yellow" },
-                    "Status: ",
-                    fs.existsSync(selectedLab.path) ? "Installed" : "Not Installed")),
-            deployError && React.createElement(Text, { color: "red", bold: true },
-                "Error: ",
-                deployError),
+                React.createElement(Text, { dimColor: true }, "Use Arrows to explore, Enter to visit.")))),
+        view === 'list' && activeGroup && (React.createElement(Box, { flexDirection: "column" },
+            React.createElement(Box, { flexDirection: "row", borderStyle: "single", borderColor: activeGroup.color, marginBottom: 1, paddingX: 1 },
+                React.createElement(Text, { bold: true, color: activeGroup.color },
+                    activeGroup.icon,
+                    " ",
+                    activeGroup.label),
+                React.createElement(Text, null, "  |  Search: "),
+                React.createElement(TextInput, { value: searchQuery, onChange: setSearchQuery, placeholder: "Filter..." })),
+            React.createElement(Box, { flexDirection: "row" },
+                React.createElement(Box, { flexDirection: "column", width: "40%", marginRight: 2, borderStyle: "single", borderColor: "gray", minHeight: 10 },
+                    currentGroupLabs.map((lab, i) => (React.createElement(Box, { key: lab.id, paddingX: 1 },
+                        React.createElement(Text, { color: i === selectedLabIndex ? activeGroup.color : "white" },
+                            i === selectedLabIndex ? "> " : "  ",
+                            " ",
+                            lab.name)))),
+                    currentGroupLabs.length === 0 && React.createElement(Text, { italic: true, dimColor: true }, "  No labs found.")),
+                React.createElement(Box, { flexDirection: "column", width: "60%", borderStyle: "round", borderColor: activeGroup.color, padding: 1 }, currentGroupLabs[selectedLabIndex] ? (React.createElement(React.Fragment, null,
+                    React.createElement(Text, { bold: true, underline: true, color: activeGroup.color }, currentGroupLabs[selectedLabIndex].name),
+                    React.createElement(Box, { marginTop: 1 },
+                        React.createElement(Text, null, currentGroupLabs[selectedLabIndex].description || "No description available.")),
+                    React.createElement(Box, { marginTop: 2 },
+                        React.createElement(Text, { dimColor: true },
+                            "Path: ",
+                            currentGroupLabs[selectedLabIndex].path),
+                        React.createElement(Text, { color: fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "green" : "gray" },
+                            "Status: ",
+                            fs.existsSync(currentGroupLabs[selectedLabIndex].path) ? "Installed" : "Click Enter to Install")))) : (React.createElement(Text, { dimColor: true }, "Select a tool to see details.")))),
             React.createElement(Box, { marginTop: 1 },
-                React.createElement(Text, { inverse: true, color: "green" },
-                    " [ ENTER TO ",
-                    fs.existsSync(selectedLab.path) ? 'CONFIGURE' : 'INSTALL',
-                    " ] "),
-                React.createElement(Text, null, "  "),
-                fs.existsSync(selectedLab.path) && React.createElement(Text, { inverse: true, color: "red" }, " [ S TO STOP ] ")))),
+                React.createElement(Text, { dimColor: true }, "Esc to Back | Enter to Install/Configure")))),
         view === 'downloading' && (React.createElement(Box, { flexDirection: "column", alignItems: "center", justifyContent: "center", height: 10 },
-            React.createElement(Text, { color: "cyan", bold: true }, "Downloading Lab..."),
+            React.createElement(Text, { color: "cyan", bold: true }, "Planting Seeds... (Downloading)"),
             React.createElement(Text, null, downloadStatus))),
-        view === 'config' && (React.createElement(EnvForm, { vars: envVars, onSubmit: startDeploy, onCancel: () => setView('details') })),
+        view === 'config' && (React.createElement(EnvForm, { vars: envVars, onSubmit: startDeploy, onCancel: () => setView('list') })),
         (view === 'deploying' || view === 'active') && (React.createElement(Box, { flexDirection: "column" },
             React.createElement(Text, { color: "orange", bold: true }, view === 'deploying' ? 'Deploying...' : 'Deployment Successful!'),
-            view === 'active' && containerStatus.length > 0 && (React.createElement(Box, { flexDirection: "column", borderStyle: "single", borderColor: "cyan", padding: 1, marginY: 1 },
-                React.createElement(Text, { underline: true }, "Service Status:"),
-                containerStatus.map((c, i) => (React.createElement(Box, { key: i, flexDirection: "column", marginTop: 1 },
-                    React.createElement(Text, { color: "green", bold: true },
-                        "\u2714 ",
-                        c.name),
-                    React.createElement(Text, null,
-                        "  State: ",
-                        c.state),
-                    React.createElement(Text, null,
-                        "  Access: ",
-                        c.ports || 'Internal Only')))))),
-            React.createElement(Box, { borderStyle: "single", padding: 1, flexDirection: "column", borderColor: "green", height: 10 },
+            containerStatus.map((c, i) => (React.createElement(Box, { key: i, flexDirection: "column", marginTop: 1, borderStyle: "single", borderColor: "green", padding: 1 },
+                React.createElement(Text, { color: "green", bold: true },
+                    "\u2714 ",
+                    c.name),
+                React.createElement(Text, null,
+                    "Status: ",
+                    c.state),
+                React.createElement(Text, null,
+                    "Ports: ",
+                    c.ports || 'N/A')))),
+            React.createElement(Box, { borderStyle: "single", padding: 1, flexDirection: "column", borderColor: "green", height: 8, marginTop: 1 },
                 React.createElement(Text, { underline: true }, "Logs:"),
-                logs.slice(-8).map((log, i) => React.createElement(Text, { key: i }, log))),
-            view === 'active' && React.createElement(Text, { dimColor: true }, "Press Esc to back"))),
+                logs.slice(-5).map((log, i) => React.createElement(Text, { key: i }, log))),
+            React.createElement(Box, { marginTop: 1 },
+                React.createElement(Text, { dimColor: true }, "Press S to Stop | Esc to Back")))),
+        view === 'details' && deployError && (React.createElement(Box, { flexDirection: "column", borderColor: "red", borderStyle: "double", padding: 1 },
+            React.createElement(Text, { bold: true, color: "red" }, "Error Occurred:"),
+            React.createElement(Text, null, deployError),
+            React.createElement(Text, { dimColor: true }, "Press Esc to return."))),
         React.createElement(Box, { marginTop: 1, flexDirection: "column", alignItems: "center" },
             React.createElement(Text, { color: "cyan" }, "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"),
             React.createElement(Text, { color: "blue" },

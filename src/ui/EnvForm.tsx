@@ -72,7 +72,7 @@ const EnvForm: React.FC<EnvFormProps> = ({ vars, onSubmit, onCancel }) => {
                     </Box>
                     {i === focusedIndex && v.defaultValue && (
                         <Box marginLeft={2}>
-                            <Text dimColor>Default: {v.defaultValue}</Text>
+                            <Text color="cyan">✨ Magic Value: {v.defaultValue}</Text>
                         </Box>
                     )}
                 </Box>
