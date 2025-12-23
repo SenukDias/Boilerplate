@@ -1,0 +1,36 @@
+---
+services:
+  adguardhome:
+    image: docker.io/adguard/adguardhome:latest
+    restart: unless-stopped
+    
+    
+    ports:
+      
+      - "80:80/tcp"
+      - "443:443/tcp"
+      
+      
+      - "3000:3000/tcp"
+      
+      - "443:443/udp"
+      - ":53/tcp"
+      - ":53/udp"
+      - "853:853/tcp"
+      - "5443:5443/tcp"
+      - "5443:5443/udp"
+    
+    volumes:
+      
+      - adguardhome_work:/opt/adguardhome/work
+      - adguardhome_conf:/opt/adguardhome/conf
+      
+    cap_add:
+      - NET_ADMIN
+      - NET_BIND_SERVICE
+      - NET_RAW
+    
+
+
+
+

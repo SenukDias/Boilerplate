@@ -1,0 +1,25 @@
+---
+services:
+  dockge:
+    image: docker.io/louislam/dockge:latest
+    restart: unless-stopped
+    environment:
+      - TZ=
+      - DOCKGE_STACKS_DIR=/opt/stacks
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - dockge_data:/app/data
+      - /opt/stacks:/opt/stacks
+    
+    
+    ports:
+      - "5001:5001"
+    
+    
+
+
+volumes:
+  dockge_data:
+    driver: local
+
+

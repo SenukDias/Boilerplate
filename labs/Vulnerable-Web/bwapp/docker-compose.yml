@@ -1,0 +1,7 @@
+services:
+  bwapp:
+    image: raesene/bwapp:latest
+    container_name: bwapp
+    ports:
+      - "8025:80"
+    restart: unless-stopped

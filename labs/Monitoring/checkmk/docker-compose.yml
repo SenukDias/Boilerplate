@@ -1,0 +1,30 @@
+---
+services:
+  checkmk:
+    image: checkmk/check-mk-raw:latest
+    restart: unless-stopped
+    environment:
+      
+      - CMK_PASSWORD=${CMK_PASSWORD}
+      - CMK_SITE_ID=cmk
+    tmpfs:
+      - /opt/omd/sites/cmk/tmp:uid=,gid=
+    volumes:
+      
+      - /etc/localtime:/etc/localtime:ro
+      
+      - checkmk_data:/omd/sites:rw
+    
+    ports:
+    
+      - "8000:8000"
+    
+      - "5000:5000"
+      - ":162/udp"
+    
+
+volumes:
+  checkmk_data:
+    driver: local
+
+

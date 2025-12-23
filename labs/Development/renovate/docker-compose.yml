@@ -1,0 +1,39 @@
+---
+services:
+  renovate:
+    image: ghcr.io/mend/renovate-ce:latest
+    
+    
+    container_name: renovate
+    restart: unless-stopped
+    
+    
+    hostname: renovate
+    
+    
+    
+    
+    ports:
+      - "8080:8080"
+    
+    
+    env_file:
+      - ./.env
+    
+    
+    
+    
+    
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+
+
+
+
+

@@ -1,0 +1,25 @@
+---
+services:
+  prometheus:
+    image: docker.io/prom/prometheus:latest
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yaml
+      - --storage.tsdb.retention.time=15d
+      
+      
+      
+    
+    ports:
+      - "9090:9090"
+    
+    volumes:
+      - prometheus_data:/prometheus
+      - ./config/prometheus.yaml:/etc/prometheus/prometheus.yaml:ro
+    
+
+volumes:
+  prometheus_data:
+    driver: local
+
+

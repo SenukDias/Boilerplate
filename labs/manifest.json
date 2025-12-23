@@ -1,9 +1,90 @@
 [
   {
+    "id": "dockge",
+    "name": "Dockge",
+    "category": "AI_Other",
+    "description": "Deploy dockge from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "netbox",
+    "name": "Netbox",
+    "category": "AI_Other",
+    "description": "Deploy netbox from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "openwebui",
+    "name": "Openwebui",
+    "category": "AI_Other",
+    "description": "Deploy openwebui from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "pangolin",
+    "name": "Pangolin",
+    "category": "AI_Other",
+    "description": "Deploy pangolin from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "portainer",
+    "name": "Portainer",
+    "category": "AI_Other",
+    "description": "Deploy portainer from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "whoami",
+    "name": "Whoami",
+    "category": "AI_Other",
+    "description": "Deploy whoami from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
     "id": "home-assistant",
     "name": "Home Assistant",
     "category": "Automation",
     "description": "Deploy home-assistant from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "homeassistant",
+    "name": "Homeassistant",
+    "category": "Automation",
+    "description": "Deploy homeassistant from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "n8n",
+    "name": "N8n",
+    "category": "Automation",
+    "description": "Deploy n8n from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "semaphoreui",
+    "name": "Semaphoreui",
+    "category": "Automation",
+    "description": "Deploy semaphoreui from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
@@ -18,10 +99,127 @@
     ]
   },
   {
+    "id": "homepage",
+    "name": "Homepage",
+    "category": "Dashboard",
+    "description": "Deploy homepage from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "homer",
+    "name": "Homer",
+    "category": "Dashboard",
+    "description": "Deploy homer from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "mariadb",
+    "name": "Mariadb",
+    "category": "Databases",
+    "description": "Deploy mariadb from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "postgres",
+    "name": "Postgres",
+    "category": "Databases",
+    "description": "Deploy postgres from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "gitea",
+    "name": "Gitea",
+    "category": "Development",
+    "description": "Deploy gitea from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "gitlab",
+    "name": "Gitlab",
+    "category": "Development",
+    "description": "Deploy gitlab from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "gitlab-runner",
+    "name": "Gitlab Runner",
+    "category": "Development",
+    "description": "Deploy gitlab-runner from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "renovate",
+    "name": "Renovate",
+    "category": "Development",
+    "description": "Deploy renovate from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
     "id": "jellyfin",
     "name": "Jellyfin",
     "category": "Media",
     "description": "Deploy jellyfin from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "alloy",
+    "name": "Alloy",
+    "category": "Monitoring",
+    "description": "Deploy alloy from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "checkmk",
+    "name": "Checkmk",
+    "category": "Monitoring",
+    "description": "Deploy checkmk from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "grafana",
+    "name": "Grafana",
+    "category": "Monitoring",
+    "description": "Deploy grafana from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "influxdb",
+    "name": "Influxdb",
+    "category": "Monitoring",
+    "description": "Deploy influxdb from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "loki",
+    "name": "Loki",
+    "category": "Monitoring",
+    "description": "Deploy loki from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
@@ -36,10 +234,55 @@
     ]
   },
   {
+    "id": "prometheus",
+    "name": "Prometheus",
+    "category": "Monitoring",
+    "description": "Deploy prometheus from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
     "id": "uptime-kuma",
     "name": "Uptime Kuma",
     "category": "Monitoring",
     "description": "Deploy uptime-kuma from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "uptimekuma",
+    "name": "Uptimekuma",
+    "category": "Monitoring",
+    "description": "Deploy uptimekuma from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "adguardhome",
+    "name": "Adguardhome",
+    "category": "Networking",
+    "description": "Deploy adguardhome from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "bind9",
+    "name": "Bind9",
+    "category": "Networking",
+    "description": "Deploy bind9 from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "nginx",
+    "name": "Nginx",
+    "category": "Networking",
+    "description": "Deploy nginx from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]
@@ -63,10 +306,46 @@
     ]
   },
   {
+    "id": "traefik",
+    "name": "Traefik",
+    "category": "Networking",
+    "description": "Deploy traefik from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "twingate-connector",
+    "name": "Twingate Connector",
+    "category": "Networking",
+    "description": "Deploy twingate-connector from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "authentik",
+    "name": "Authentik",
+    "category": "Security",
+    "description": "Deploy authentik from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
     "id": "crAPI",
     "name": "CrAPI",
     "category": "Security",
     "description": "Deploy crAPI from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "passbolt",
+    "name": "Passbolt",
+    "category": "Security",
+    "description": "Deploy passbolt from Senuk's Boilerplate",
     "files": [
       "docker-compose.yml"
     ]

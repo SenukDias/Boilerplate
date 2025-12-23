@@ -1,0 +1,72 @@
+---
+services:
+  traefik:
+    image: docker.io/library/traefik:latest
+    
+    
+    security_opt:
+      - no-new-privileges:true
+    
+    
+    command:
+      - "--global.checkNewVersion=false"
+      - "--global.sendAnonymousUsage=false"
+      
+      - "--ping=true"
+      - "--ping.entryPoint=ping"
+      
+      - "--ping.entryPoint=ping"
+      
+      
+      - "--entrypoints.ping.address=:8082"
+      
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.encodedCharacters.allowEncodedSlash=true"
+      
+      
+      
+      
+      
+      
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--providers.docker.network="
+      
+    ports:
+      - "80:80"
+      - "443:443"
+      
+    
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      
+    environment:
+      - TZ=
+      
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://127.0.0.1:8082/ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - 
+    
+    restart: unless-stopped
+    
+
+
+
+
+
+networks:
+  :
+    
+    
+    driver: bridge
+    
+    name: 
+    
+
+
+

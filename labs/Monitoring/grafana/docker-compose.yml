@@ -1,0 +1,27 @@
+services:
+  grafana:
+    image: docker.io/grafana/grafana-oss:latest
+    restart: unless-stopped
+    
+    environment:
+      
+      
+    
+    
+    
+    ports:
+      - "3000:3000"
+    
+    volumes:
+      - grafana_data:/var/lib/grafana
+    
+
+  
+
+
+
+
+volumes:
+  grafana_data:
+    driver: local
+  

@@ -1,0 +1,85 @@
+---
+services:
+  authentik:
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: server
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=
+      - AUTHENTIK_POSTGRESQL__HOST=authentik_postgres
+      - AUTHENTIK_POSTGRESQL__USER=authentik
+      - AUTHENTIK_POSTGRESQL__NAME=authentik
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${DATABASE_PASSWORD}
+      
+    networks:
+      
+      - authentik_backend
+    
+    ports:
+      - "8000:9000"
+      - "8443:9443"
+    
+    volumes:
+      
+    
+    
+    depends_on:
+      - authentik_postgres
+    
+
+  
+  authentik_worker:
+    image: ghcr.io/goauthentik/server:latest
+    restart: unless-stopped
+    command: worker
+    environment:
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=
+      - AUTHENTIK_POSTGRESQL__HOST=authentik_postgres
+      - AUTHENTIK_POSTGRESQL__USER=authentik
+      - AUTHENTIK_POSTGRESQL__NAME=authentik
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${DATABASE_PASSWORD}
+      
+      
+    user: root
+    networks:
+      - authentik_backend
+    volumes:
+      
+      - /run/docker.sock:/run/docker.sock
+      
+    
+    depends_on:
+      - authentik_postgres
+    
+
+  
+  
+  authentik_postgres:
+    image: docker.io/library/postgres:latest
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=authentik
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=authentik
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authentik"]
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - authentik_backend
+    volumes:
+      
+  
+
+
+networks:
+  authentik_backend:
+    driver: bridge
+  
+
+
+

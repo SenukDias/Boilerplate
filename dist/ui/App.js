@@ -8,6 +8,16 @@ import { deployLab, stopLab, getLabStatus } from '../lib/docker.js';
 import { setupLabLocally } from '../lib/downloader.js';
 import EnvForm from './EnvForm.js';
 import Header from './Header.js';
+// Featured Labs IDs
+const FEATURED_IDS = [
+    'home-assistant',
+    'pihole',
+    'portainer',
+    'jellyfin',
+    'nextcloud',
+    'nginx-proxy-manager',
+    'vaultwarden'
+];
 const App = () => {
     const { exit } = useApp();
     const [labs, setLabs] = useState([]);
@@ -25,9 +35,26 @@ const App = () => {
     useEffect(() => {
         getLabs().then(setLabs);
     }, []);
-    // Derived list of filtered labs
-    const filteredLabs = labs.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        l.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    // Derived list of processed labs (Featured handling + Filtering)
+    const processedLabs = React.useMemo(() => {
+        let processed = labs.map(l => ({
+            ...l,
+            // Override category for display if featured
+            displayCategory: FEATURED_IDS.includes(l.id) || FEATURED_IDS.includes(l.name.toLowerCase()) ? 'AAA_FEATURED' : l.category
+        }));
+        if (searchQuery) {
+            processed = processed.filter(l => l.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                l.category.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+        // Sort: Featured first (AAA_FEATURED), then Category, then Name
+        return processed.sort((a, b) => {
+            if (a.displayCategory < b.displayCategory)
+                return -1;
+            if (a.displayCategory > b.displayCategory)
+                return 1;
+            return a.name.localeCompare(b.name);
+        });
+    }, [labs, searchQuery]);
     useInput((input, key) => {
         if (view === 'deploying' || view === 'downloading')
             return;
@@ -46,11 +73,11 @@ const App = () => {
                 setSelectIndex(prev => Math.max(0, prev - 1));
             }
             if (key.downArrow) {
-                setSelectIndex(prev => Math.min(filteredLabs.length - 1, prev + 1));
+                setSelectIndex(prev => Math.min(processedLabs.length - 1, prev + 1));
             }
             if (key.return) {
-                if (filteredLabs[selectIndex]) {
-                    setSelectedLab(filteredLabs[selectIndex]);
+                if (processedLabs[selectIndex]) {
+                    setSelectedLab(processedLabs[selectIndex]);
                     setView('details');
                 }
             }
@@ -141,18 +168,25 @@ const App = () => {
                         setSearchQuery(val);
                         setSelectIndex(0);
                     }, placeholder: "Type to filter..." })),
-            React.createElement(Text, { underline: true }, "Remote Catalog:"),
-            filteredLabs.slice(0, 15).map((lab, index) => ( // limit display
-            React.createElement(Box, { key: lab.id, justifyContent: "space-between" },
-                React.createElement(Text, { color: index === selectIndex ? "cyan" : "white" },
-                    index === selectIndex ? "> " : "  ",
-                    lab.name),
-                React.createElement(Text, { color: "gray" },
-                    "[",
-                    lab.category,
-                    "]")))),
+            React.createElement(Box, { flexDirection: "column", height: 15 }, processedLabs.slice(Math.max(0, selectIndex - 7), Math.max(0, selectIndex - 7) + 15).map((lab, i) => {
+                // Calculate actual index in the full list
+                const actualIndex = Math.max(0, selectIndex - 7) + i;
+                // Check for header (if first item or category changed)
+                const showHeader = actualIndex === 0 || lab.displayCategory !== processedLabs[actualIndex - 1]?.displayCategory;
+                return (React.createElement(Box, { key: lab.id, flexDirection: "column" },
+                    showHeader && (React.createElement(Box, { marginTop: 1, marginBottom: 0 },
+                        React.createElement(Text, { underline: true, bold: true, color: "yellow" }, lab.displayCategory === 'AAA_FEATURED' ? '★ FEATURED' : lab.displayCategory))),
+                    React.createElement(Box, { justifyContent: "space-between" },
+                        React.createElement(Text, { color: actualIndex === selectIndex ? "cyan" : "white" },
+                            actualIndex === selectIndex ? "> " : "  ",
+                            lab.name),
+                        React.createElement(Text, { color: "dimColor" }, lab.displayCategory === 'AAA_FEATURED' ? lab.category : ''))));
+            })),
             React.createElement(Box, { marginTop: 1 },
-                React.createElement(Text, { dimColor: true }, "Arrows to move, Enter to install/select")))),
+                React.createElement(Text, { dimColor: true },
+                    "Arrows to move, Enter to install/select (Total: ",
+                    processedLabs.length,
+                    ")")))),
         view === 'details' && selectedLab && (React.createElement(Box, { flexDirection: "column" },
             React.createElement(Text, { bold: true, color: "orange" }, selectedLab.name),
             React.createElement(Box, { borderStyle: "single", borderColor: "orange", padding: 1 },

@@ -1,0 +1,10 @@
+services:
+  mutillidae:
+    image: citizenstig/nowasp:latest
+    container_name: mutillidae
+    ports:
+      - "8081:80"
+      - "3306:3306"
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_PASSWORD=mutillidae

@@ -1,0 +1,7 @@
+services:
+  dvga:
+    image: dolevf/dvga:latest
+    container_name: dvga
+    ports:
+      - "5001:5000" # Mapped to 5001 to avoid conflict with VAmPI
+    restart: unless-stopped

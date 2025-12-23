@@ -1,0 +1,37 @@
+services:
+  gitlab:
+    image: docker.io/gitlab/gitlab-ce:latest
+    
+    restart: unless-stopped
+    
+    shm_size: '256m'
+    environment:
+      - 
+    
+    ports:
+      
+      - ":80"
+      
+      - "2424:22"
+      
+    volumes:
+      
+      
+      - ./config/gitlab.rb:/etc/gitlab/gitlab.rb:ro
+      
+      - gitlab_config:/etc/gitlab
+      - gitlab_logs:/var/log/gitlab
+      - gitlab_data:/var/opt/gitlab
+      
+    
+    
+    
+
+
+
+
+
+
+
+
+

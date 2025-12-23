@@ -1,0 +1,65 @@
+services:
+  semaphoreui:
+    image: docker.io/semaphoreui/semaphore:latest
+    restart: unless-stopped
+    environment:  
+      - SEMAPHORE_DB_DIALECT=mysql
+      
+      - SEMAPHORE_DB_HOST=semaphoreui_db
+      
+      - SEMAPHORE_DB=semaphore
+      - SEMAPHORE_DB_USER=semaphore
+      - SEMAPHORE_DB_PASS=${DATABASE_PASSWORD}
+      - SEMAPHORE_ADMIN=admin
+      - SEMAPHORE_ADMIN_NAME=Administrator
+      - SEMAPHORE_ADMIN_EMAIL=admin@home.arpa
+      - SEMAPHORE_ADMIN_PASSWORD=${SEMAPHORE_ADMIN_PASSWORD}
+      - SEMAPHORE_PLAYBOOK_PATH=/tmp/semaphore/
+      - SEMAPHORE_ACCESS_KEY_ENCRYPTION=${SEMAPHORE_ACCESS_KEY_ENCRYPTION}
+      - ANSIBLE_HOST_KEY_CHECKING=
+    
+    networks:
+    
+      - semaphoreui_backend
+    
+    
+    
+    
+    ports:
+      - "3000:3000"
+    
+    
+    
+    depends_on:
+      - semaphoreui_db
+    
+
+  
+  semaphoreui_db:
+    image: docker.io/library/mysql:latest
+    restart: unless-stopped
+    environment:
+      - MYSQL_USER=semaphore
+      - MYSQL_PASSWORD=${DATABASE_PASSWORD}
+      - MYSQL_DATABASE=semaphore
+      - MYSQL_ROOT_PASSWORD=${DATABASE_PASSWORD}
+    networks:
+      - semaphoreui_backend
+    volumes:
+      - semaphoreui_db:/var/lib/mysql
+  
+
+
+volumes:
+  semaphoreui_db:
+    driver: local
+
+
+
+networks:
+  
+  semaphoreui_backend:
+    driver: bridge
+  
+  
+

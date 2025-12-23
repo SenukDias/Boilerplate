@@ -1,29 +1,56 @@
 services:
-  nextcloud:
-    image: nextcloud
-    restart: always
-    ports:
-      - 8080:80
-    volumes:
-      - nextcloud:/var/www/html
+  -app:
+    image: docker.io/library/nextcloud:latest
+    
+    restart: unless-stopped
+    container_name: -app
+    
     environment:
-      - MYSQL_PASSWORD=secret
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
-      - MYSQL_HOST=db
+      - TZ=
+      
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=
+      - POSTGRES_USER=
+      - POSTGRES_HOST=-db
+      
 
-  db:
-    image: mariadb:10.6
-    restart: always
-    command: --transaction-isolation=READ-COMMITTED --binlog-format=ROW
+    
+    ports:
+      
+      - "80:80"
+      
+    
     volumes:
-      - db:/var/lib/mysql
+      - nextcloud-data:/var/www/html
+    
+    depends_on:
+      - -db
+    
+
+  -db:
+    
+    image: docker.io/library/postgres:latest
+    
+    restart: unless-stopped
+    container_name: -db
+    
     environment:
-      - MYSQL_ROOT_PASSWORD=somesecret
-      - MYSQL_PASSWORD=secret
-      - MYSQL_DATABASE=nextcloud
-      - MYSQL_USER=nextcloud
+      - TZ=
+      - POSTGRES_USER=
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=
+    
+    volumes:
+      - nextcloud-db:/var/lib/postgresql/data
+
+    
 
 volumes:
-  nextcloud:
-  db:
+  nextcloud-data:
+    driver: local
+  nextcloud-db:
+    driver: local
+
+networks:
+  
+

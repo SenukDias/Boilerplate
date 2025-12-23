@@ -35,10 +35,18 @@ const generate = () => {
 
             // We specifically want docker-compose.yml and .env.example if it exists
             const artifacts = [];
-            if (fs.existsSync(path.join(labPath, 'docker-compose.yml'))) artifacts.push('docker-compose.yml');
+            let composeFile = 'docker-compose.yml';
+
+            if (fs.existsSync(path.join(labPath, 'docker-compose.yml'))) composeFile = 'docker-compose.yml';
+            else if (fs.existsSync(path.join(labPath, 'docker-compose.yaml'))) composeFile = 'docker-compose.yaml';
+            else if (fs.existsSync(path.join(labPath, 'compose.yml'))) composeFile = 'compose.yml';
+            else if (fs.existsSync(path.join(labPath, 'compose.yaml'))) composeFile = 'compose.yaml';
+            else composeFile = '';
+
+            if (composeFile) artifacts.push(composeFile);
             if (fs.existsSync(path.join(labPath, '.env.example'))) artifacts.push('.env.example');
 
-            if (artifacts.includes('docker-compose.yml')) {
+            if (composeFile) {
                 manifest.push({
                     id: labDir,
                     name: labDir.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),

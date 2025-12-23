@@ -1,0 +1,36 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    
+    
+    restart: unless-stopped
+    container_name: homepage
+    
+    
+    hostname: homepage
+    
+    environment:
+      - TZ=
+      - LOG_LEVEL=
+      - HOMEPAGE_ALLOWED_HOSTS=
+      
+    
+    
+    
+    
+    ports:
+      - 3000:3000
+    
+    
+    volumes:
+      
+    
+    
+    
+    
+
+
+
+
+
+

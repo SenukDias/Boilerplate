@@ -1,0 +1,39 @@
+services:
+  bind9:
+    image: docker.io/ubuntu/bind9:latest
+    restart: unless-stopped
+    
+    environment:
+      - TZ=
+      - BIND9_USER=bind
+    
+    networks:
+      
+      :
+      
+    
+    
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+    
+    volumes:
+      
+      - bind9_config:/etc/bind
+      - bind9_zones:/var/lib/bind
+      - bind9_cache:/var/cache/bind
+      
+
+
+
+networks:
+  :
+    
+    
+    driver: bridge
+    
+  
+
+
+
+

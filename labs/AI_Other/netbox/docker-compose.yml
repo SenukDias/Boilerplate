@@ -1,0 +1,141 @@
+---
+services:
+  netbox:
+    image: docker.io/netboxcommunity/netbox:latest
+    restart: unless-stopped
+    environment:
+      
+      
+      - ALLOWED_HOSTS=*
+      
+      
+      - DB_HOST=netbox_postgres
+      
+      - DB_NAME=netbox
+      - DB_USER=netbox
+      - DB_PASSWORD=${DATABASE_PASSWORD}
+      - REDIS_HOST=netbox_redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_CACHE_HOST=netbox_redis-cache
+      - REDIS_CACHE_PASSWORD=${REDIS_PASSWORD}
+      - SECRET_KEY=${NETBOX_SECRET_KEY}
+      
+      
+    networks:
+      
+      netbox_backend:
+    
+    ports:
+      - "8000:8080"
+    
+    volumes:
+      - netbox_media:/opt/netbox/netbox/media
+      - netbox_reports:/opt/netbox/netbox/reports
+      - netbox_scripts:/opt/netbox/netbox/scripts
+    
+    depends_on:
+      
+      - netbox_postgres
+      
+      - netbox_redis
+      - netbox_redis-cache
+
+  netbox_worker:
+    image: docker.io/netboxcommunity/netbox:latest
+    restart: unless-stopped
+    command:
+      - /opt/netbox/venv/bin/python
+      - /opt/netbox/netbox/manage.py
+      - rqworker
+    environment:
+      
+      
+      - DB_HOST=netbox_postgres
+      
+      - DB_NAME=netbox
+      - DB_USER=netbox
+      - DB_PASSWORD=${DATABASE_PASSWORD}
+      - REDIS_HOST=netbox_redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_CACHE_HOST=netbox_redis-cache
+      - REDIS_CACHE_PASSWORD=${REDIS_PASSWORD}
+      - SECRET_KEY=${NETBOX_SECRET_KEY}
+      
+      
+    networks:
+      netbox_backend:
+    volumes:
+      - netbox_media:/opt/netbox/netbox/media
+      - netbox_reports:/opt/netbox/netbox/reports
+      - netbox_scripts:/opt/netbox/netbox/scripts
+    depends_on:
+      
+      - netbox_postgres
+      
+      - netbox
+      - netbox_redis
+      - netbox_redis-cache
+
+  netbox_redis:
+    image: docker.io/library/redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      netbox_backend:
+    volumes:
+      - netbox_redis:/data
+
+  netbox_redis-cache:
+    image: docker.io/library/redis:latest
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}"]
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      netbox_backend:
+    volumes:
+      - netbox_redis-cache:/data
+
+  
+  netbox_postgres:
+    image: docker.io/library/postgres:latest
+    restart: unless-stopped
+    environment:
+      
+      - POSTGRES_USER=netbox
+      - POSTGRES_PASSWORD=${DATABASE_PASSWORD}
+      - POSTGRES_DB=netbox
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U netbox"]
+      start_period: 30s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    networks:
+      - netbox_backend
+    volumes:
+      - netbox_postgres:/var/lib/postgresql/data
+  
+
+networks:
+  netbox_backend:
+    driver: bridge
+  
+
+volumes:
+  
+  netbox_postgres:
+    driver: local
+  
+  netbox_redis:
+    driver: local
+  netbox_redis-cache:
+    driver: local
+  netbox_media:
+    driver: local
+  netbox_reports:
+    driver: local
+  netbox_scripts:
+    driver: local

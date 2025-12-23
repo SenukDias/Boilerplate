@@ -1,0 +1,23 @@
+n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-server
+    hostname: n8n-server
+    environment:
+      - N8N_LOG_LEVEL=
+      - GENERIC_TIMEZONE=
+      - TZ=
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_RUNNERS_ENABLED=true
+      - NODE_ENV=production
+      - N8N_ENCRYPTION_KEY=
+      - N8N_PROXY_HOPS=1
+      - EXECUTIONS_DATA_SAVE_ON_ERROR=all
+      - EXECUTIONS_DATA_SAVE_ON_SUCCESS=none
+      volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - data:/home/node/.n8n
+    network_mode: 
+    restart: unless-stopped
+    volumes:
+  data:
+    driver: local

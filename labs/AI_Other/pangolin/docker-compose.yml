@@ -1,0 +1,40 @@
+---
+services:
+  pangolin:
+    image: docker.io/fosrl/pangolin:latest
+    
+    restart: unless-stopped
+    container_name: pangolin
+    
+    hostname: pangolin
+    
+    networks:
+      
+      
+      pangolin_network:
+      
+    
+    
+    ports:
+      
+      - "8080:8080/tcp"
+      
+    
+    
+    volumes:
+      
+    
+    
+
+
+
+
+networks:
+  pangolin_network:
+    
+    
+    driver: bridge
+    
+    
+  
+
