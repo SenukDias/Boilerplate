@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
 import TextInput from 'ink-text-input';
+import fs from 'fs';
 import { getLabs, Lab } from '../lib/labs.js';
 import { getRequiredEnvVars, EnvVar, saveEnvFile, loadExistingEnv } from '../lib/env.js';
-import { deployLab, stopLab } from '../lib/docker.js';
+import { deployLab, stopLab, getLabStatus, ContainerStatus } from '../lib/docker.js';
+import { setupLabLocally } from '../lib/downloader.js';
 import EnvForm from './EnvForm.js';
 import Header from './Header.js';
 
 const App = () => {
     const { exit } = useApp();
     const [labs, setLabs] = useState<Lab[]>([]);
-    const [view, setView] = useState<'list' | 'details' | 'config' | 'deploying' | 'active'>('list');
+    const [view, setView] = useState<'list' | 'details' | 'downloading' | 'config' | 'deploying' | 'active'>('list');
 
     // Search & Selection State
     const [searchQuery, setSearchQuery] = useState('');
@@ -21,9 +23,11 @@ const App = () => {
     const [envVars, setEnvVars] = useState<EnvVar[]>([]);
     const [logs, setLogs] = useState<string[]>([]);
     const [deployError, setDeployError] = useState<string | null>(null);
+    const [containerStatus, setContainerStatus] = useState<ContainerStatus[]>([]);
+    const [downloadStatus, setDownloadStatus] = useState<string>('');
 
     useEffect(() => {
-        setLabs(getLabs());
+        getLabs().then(setLabs);
     }, []);
 
     // Derived list of filtered labs
@@ -32,11 +36,8 @@ const App = () => {
         l.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Create categorized map for display (only if not searching strictly?)
-    // Actually, simple list with category headers is easier for navigation with search
-
     useInput((input: string, key: any) => {
-        if (view === 'deploying') return;
+        if (view === 'deploying' || view === 'downloading') return;
 
         if (key.escape) {
             if (view === 'list') {
@@ -53,7 +54,6 @@ const App = () => {
             if (key.downArrow) {
                 setSelectIndex(prev => Math.min(filteredLabs.length - 1, prev + 1));
             }
-            // Page Up/Down could go here
             if (key.return) {
                 if (filteredLabs[selectIndex]) {
                     setSelectedLab(filteredLabs[selectIndex]);
@@ -63,41 +63,75 @@ const App = () => {
         }
 
         if (view === 'details') {
-            if (key.return) { // Configure
+            if (key.return) { // Install / Configure
                 if (selectedLab) {
-                    const vars = getRequiredEnvVars(selectedLab);
-                    const existing = loadExistingEnv(selectedLab);
-                    vars.forEach(v => {
-                        if (existing[v.key]) v.value = existing[v.key];
-                    });
-
-                    if (vars.length > 0) {
-                        setEnvVars(vars);
-                        setView('config');
+                    if (fs.existsSync(selectedLab.path)) {
+                        // Already exists, go to config
+                        prepareConfig(selectedLab);
                     } else {
-                        startDeploy({});
+                        // Need to download
+                        startDownload(selectedLab);
                     }
                 }
             }
-            if (input === 's' && selectedLab) {
-                stopLab(selectedLab.path, (log) => setLogs(prev => [...prev.slice(-10), log]))
+            if (input === 's' && selectedLab && fs.existsSync(selectedLab.path)) {
+                stopLab(selectedLab.path, (log) => setLogs(prev => [...prev.slice(-50), log]))
                     .then(() => setLogs(prev => [...prev, 'Stopped.']))
                     .catch(e => setLogs(prev => [...prev, e.message]));
             }
         }
     });
 
+    const startDownload = async (lab: Lab) => {
+        setView('downloading');
+        setDownloadStatus(`Initializing download for ${lab.name}...`);
+        try {
+            setDownloadStatus(`Fetching files from remote repository...`);
+            await setupLabLocally(lab.category, lab.id, lab.files);
+            setDownloadStatus('Download complete!');
+
+            // Short delay to show success
+            setTimeout(() => {
+                prepareConfig(lab);
+            }, 1000);
+
+        } catch (e: any) {
+            setDeployError(`Download failed: ${e.message}`);
+            setView('details');
+        }
+    };
+
+    const prepareConfig = (lab: Lab) => {
+        const vars = getRequiredEnvVars(lab);
+        const existing = loadExistingEnv(lab);
+        vars.forEach(v => {
+            if (existing[v.key]) v.value = existing[v.key];
+        });
+
+        if (vars.length > 0) {
+            setEnvVars(vars);
+            setView('config');
+        } else {
+            startDeploy({});
+        }
+    };
+
     const startDeploy = async (values: Record<string, string>) => {
         if (!selectedLab) return;
         saveEnvFile(selectedLab, values);
         setView('deploying');
         setLogs(['Starting deployment...']);
+        setContainerStatus([]);
         setDeployError(null);
 
         try {
             await deployLab(selectedLab.path, values, (log) => {
-                setLogs(prev => [...prev.slice(-10), log.trim()]);
+                setLogs(prev => [...prev.slice(-50), log.trim()]);
             });
+
+            const status = await getLabStatus(selectedLab.path);
+            setContainerStatus(status);
+
             setView('active');
         } catch (e: any) {
             setDeployError(e.message);
@@ -106,7 +140,7 @@ const App = () => {
     };
 
     if (labs.length === 0) {
-        return <Text>No labs found in {process.cwd()}/labs</Text>;
+        return <Text>Loading Labs Catalog...</Text>;
     }
 
     // Render Logic
@@ -128,9 +162,9 @@ const App = () => {
                         />
                     </Box>
 
-                    <Text underline>Deployed Catalog:</Text>
+                    <Text underline>Remote Catalog:</Text>
                     {filteredLabs.slice(0, 15).map((lab, index) => ( // limit display
-                        <Box key={lab.path} justifyContent="space-between">
+                        <Box key={lab.id} justifyContent="space-between">
                             <Text color={index === selectIndex ? "cyan" : "white"}>
                                 {index === selectIndex ? "> " : "  "}
                                 {lab.name}
@@ -138,10 +172,9 @@ const App = () => {
                             <Text color="gray">[{lab.category}]</Text>
                         </Box>
                     ))}
-                    {filteredLabs.length === 0 && <Text italic>No labs found</Text>}
 
                     <Box marginTop={1}>
-                        <Text dimColor>Arrows to move, Enter to select, Type to search</Text>
+                        <Text dimColor>Arrows to move, Enter to install/select</Text>
                     </Box>
                 </Box>
             )}
@@ -151,16 +184,26 @@ const App = () => {
                     <Text bold color="orange">{selectedLab.name}</Text>
                     <Box borderStyle="single" borderColor="orange" padding={1}>
                         <Text>{selectedLab.description}</Text>
-                        <Text dimColor>Path: {selectedLab.path}</Text>
+                        <Text dimColor>Target Path: {selectedLab.path}</Text>
+                        <Text color={fs.existsSync(selectedLab.path) ? "green" : "yellow"}>
+                            Status: {fs.existsSync(selectedLab.path) ? "Installed" : "Not Installed"}
+                        </Text>
                     </Box>
 
                     {deployError && <Text color="red" bold>Error: {deployError}</Text>}
 
                     <Box marginTop={1}>
-                        <Text inverse color="green"> [ ENTER TO DEPLOY ] </Text>
+                        <Text inverse color="green"> [ ENTER TO {fs.existsSync(selectedLab.path) ? 'CONFIGURE' : 'INSTALL'} ] </Text>
                         <Text>  </Text>
-                        <Text inverse color="red"> [ S TO STOP ] </Text>
+                        {fs.existsSync(selectedLab.path) && <Text inverse color="red"> [ S TO STOP ] </Text>}
                     </Box>
+                </Box>
+            )}
+
+            {view === 'downloading' && (
+                <Box flexDirection="column" alignItems="center" justifyContent="center" height={10}>
+                    <Text color="cyan" bold>Downloading Lab...</Text>
+                    <Text>{downloadStatus}</Text>
                 </Box>
             )}
 
@@ -174,11 +217,26 @@ const App = () => {
 
             {(view === 'deploying' || view === 'active') && (
                 <Box flexDirection="column">
-                    <Text color="orange">{view === 'deploying' ? 'Deploying...' : 'Active'}</Text>
-                    <Box borderStyle="single" padding={1} flexDirection="column" borderColor="green">
-                        {logs.map((log, i) => <Text key={i}>{log}</Text>)}
+                    <Text color="orange" bold>{view === 'deploying' ? 'Deploying...' : 'Deployment Successful!'}</Text>
+
+                    {view === 'active' && containerStatus.length > 0 && (
+                        <Box flexDirection="column" borderStyle="single" borderColor="cyan" padding={1} marginY={1}>
+                            <Text underline>Service Status:</Text>
+                            {containerStatus.map((c, i) => (
+                                <Box key={i} flexDirection="column" marginTop={1}>
+                                    <Text color="green" bold>✔ {c.name}</Text>
+                                    <Text>  State: {c.state}</Text>
+                                    <Text>  Access: {c.ports || 'Internal Only'}</Text>
+                                </Box>
+                            ))}
+                        </Box>
+                    )}
+
+                    <Box borderStyle="single" padding={1} flexDirection="column" borderColor="green" height={10}>
+                        <Text underline>Logs:</Text>
+                        {logs.slice(-8).map((log, i) => <Text key={i}>{log}</Text>)}
                     </Box>
-                    {view === 'active' && <Text color="green" bold>Deployment Successful!</Text>}
+
                     {view === 'active' && <Text dimColor>Press Esc to back</Text>}
                 </Box>
             )}

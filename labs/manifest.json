@@ -1,0 +1,92 @@
+[
+  {
+    "id": "home-assistant",
+    "name": "Home Assistant",
+    "category": "Automation",
+    "description": "Deploy home-assistant from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "nextcloud",
+    "name": "Nextcloud",
+    "category": "Cloud",
+    "description": "Deploy nextcloud from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "jellyfin",
+    "name": "Jellyfin",
+    "category": "Media",
+    "description": "Deploy jellyfin from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "portainer",
+    "name": "Portainer",
+    "category": "Monitoring",
+    "description": "Deploy portainer from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "uptime-kuma",
+    "name": "Uptime Kuma",
+    "category": "Monitoring",
+    "description": "Deploy uptime-kuma from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "nginx-proxy-manager",
+    "name": "Nginx Proxy Manager",
+    "category": "Networking",
+    "description": "Deploy nginx-proxy-manager from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "pihole",
+    "name": "Pihole",
+    "category": "Networking",
+    "description": "Deploy pihole from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "crAPI",
+    "name": "CrAPI",
+    "category": "Security",
+    "description": "Deploy crAPI from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "vapi",
+    "name": "Vapi",
+    "category": "Security",
+    "description": "Deploy vapi from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  },
+  {
+    "id": "vaultwarden",
+    "name": "Vaultwarden",
+    "category": "Security",
+    "description": "Deploy vaultwarden from Senuk's Boilerplate",
+    "files": [
+      "docker-compose.yml"
+    ]
+  }
+]

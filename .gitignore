@@ -1,0 +1,18 @@
+# Dependencies
+node_modules
+dist
+
+# Environment
+.env
+
+# Docker Runtime Data (exclude from repo)
+**/data/
+**/config/
+**/mysql/
+**/wordpress/
+**/*.db
+**/*.log
+
+# IDE
+.vscode
+.idea

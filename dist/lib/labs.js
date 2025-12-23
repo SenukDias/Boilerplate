@@ -1,31 +1,54 @@
-import fs from 'fs';
 import path from 'path';
-const LABS_DIR = path.join(process.cwd(), 'labs');
-// Helper to scan for labs. For now, we hardcode categorizations or infer them.
-// In a real scenario, we might read a 'lab.json' metadata file from each dir.
-export const getLabs = () => {
-    if (!fs.existsSync(LABS_DIR))
-        return [];
-    const labs = [];
-    // crAPI
-    if (fs.existsSync(path.join(LABS_DIR, 'crAPI'))) {
-        labs.push({
-            id: 'crAPI',
-            name: 'crAPI (Completely Ridiculous API)',
-            category: 'API Security',
-            description: 'A vulnerable API for learning OWASP Top 10.',
-            path: path.join(LABS_DIR, 'crAPI')
-        });
+import https from 'https';
+import fs from 'fs';
+const MANIFEST_URL = 'https://raw.githubusercontent.com/SenukDias/Boilerplate/main/labs/manifest.json';
+const LOCAL_MANIFEST_PATH = path.join(process.cwd(), 'labs', 'manifest.json');
+const USER_HOME_LABS = path.join(os.homedir(), 'Documents', 'Boilerplate');
+import os from 'os';
+export const getLabs = async () => {
+    // 1. Try to fetch remote manifest
+    try {
+        const remoteLabs = await fetchRemoteManifest();
+        return remoteLabs.map(transformToLab);
     }
-    // vapi
-    if (fs.existsSync(path.join(LABS_DIR, 'vapi'))) {
-        labs.push({
-            id: 'vapi',
-            name: 'vAPI',
-            category: 'API Security',
-            description: 'Vulnerable API for security testing practice.',
-            path: path.join(LABS_DIR, 'vapi')
-        });
+    catch (e) {
+        // console.error("Failed to fetch remote manifest, trying local fallback...");
     }
-    return labs;
+    // 2. Fallback to local manifest (Dev Mode / Offline)
+    if (fs.existsSync(LOCAL_MANIFEST_PATH)) {
+        try {
+            const localData = JSON.parse(fs.readFileSync(LOCAL_MANIFEST_PATH, 'utf-8'));
+            return localData.map(transformToLab);
+        }
+        catch (e) {
+            console.error("Failed to parse local manifest");
+        }
+    }
+    return [];
+};
+const fetchRemoteManifest = () => {
+    return new Promise((resolve, reject) => {
+        https.get(MANIFEST_URL, (res) => {
+            if (res.statusCode !== 200) {
+                reject(new Error(`Status ${res.statusCode}`));
+                return;
+            }
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                try {
+                    resolve(JSON.parse(data));
+                }
+                catch (e) {
+                    reject(e);
+                }
+            });
+        }).on('error', reject);
+    });
+};
+const transformToLab = (item) => {
+    return {
+        ...item,
+        path: path.join(USER_HOME_LABS, item.category, item.id)
+    };
 };
