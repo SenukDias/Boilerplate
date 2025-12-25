@@ -1,7 +1,7 @@
 
 <div align="center">
 
-![Project Banner](./assets/banner.png)
+<img src="./assets/banner.png" alt="Project Banner" width="100%" />
 
 # 🌱 Senuk's Boilerplates
 ### The Ultimate Digital Garden for Homelabbers & Developers
