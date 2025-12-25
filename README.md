@@ -1,6 +1,8 @@
 
 <div align="center">
 
+![Project Banner](./assets/banner.png)
+
 # 🌱 Senuk's Boilerplates
 ### The Ultimate Digital Garden for Homelabbers & Developers
 
@@ -16,6 +18,11 @@
 
 **Senuk's Boilerplates** is a premium, cinematic CLI tool designed to simplify the deployment of self-hosted applications. Forget manually copying `docker-compose.yml` files. With a beautiful interactive dashboard, you can browse, configure, and plant (deploy) your favorite tools in seconds.
 
+## 📸 Demo
+
+![CLI Demo](./assets/demo.gif)
+*Watch the cinematic intro and interactive navigation in action.*
+
 ## ✨ Features
 
 ### 🎬 Cinematic Experience
@@ -29,11 +36,15 @@ Navigate through curated categories of tools:
 -   **Security**: 🛡️ Vaultwarden, Identity managers.
 -   **And more**: Networking, Automation, Media, Cloud...
 
+![Category Selection](./assets/categories.png)
+
 ### 🚀 Active Apps Dashboard
 Stop guessing what's running. The **Active Apps** dashboard sits at the top of your screen:
 -   **Live Status**: See real-time Green/Red indicators for your containers.
 -   **Interactive Cards**: Select an app to manage it.
 -   **Management**: View logs, stop containers, or **Reconfigure** on the fly.
+
+![Active Apps Dashboard](./assets/active-apps.png)
 
 ### ✨ Magical Configuration
 No more editing files in `nano`.
@@ -41,22 +52,28 @@ No more editing files in `nano`.
 -   **Magic Values**: We auto-detect and suggest defaults for critical secrets and ports.
 -   **Pre-filled**: Reconfiguring an app loads your existing settings automatically.
 
+![Configuration Form](./assets/config-form.png)
+
 ## 📦 Installation
 
 To use the tool, you can run it directly via `npx` or install it globally.
 
 ### Quick Start (Recommended)
 Run the garden without installing anything:
+
 ```bash
 npx senuks-boilerplate
 ```
 
 ### Global Installation
 Plant it in your system for easier access:
+
 ```bash
 npm install -g senuks-boilerplate
 ```
+
 Then run it anywhere:
+
 ```bash
 boilerplates
 ```
