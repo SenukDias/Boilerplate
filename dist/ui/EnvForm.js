@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import TextInput from 'ink-text-input';
 const EnvForm = ({ vars, onSubmit, onCancel }) => {
     const [values, setValues] = useState({});
     const [focusedIndex, setFocusedIndex] = useState(0);
@@ -25,34 +26,28 @@ const EnvForm = ({ vars, onSubmit, onCancel }) => {
             if (focusedIndex === vars.length) {
                 onSubmit(values);
             }
-        }
-        if (focusedIndex < vars.length && !key.ctrl && !key.meta && !key.return && !key.upArrow && !key.downArrow) {
-            const currentVar = vars[focusedIndex];
-            const currentVal = values[currentVar.key] || '';
-            if (key.backspace || key.delete) {
-                setValues({ ...values, [currentVar.key]: currentVal.slice(0, -1) });
-            }
             else {
-                setValues({ ...values, [currentVar.key]: currentVal + input });
+                // Move to next field on Enter
+                setFocusedIndex(prev => Math.min(vars.length, prev + 1));
             }
         }
     });
-    return (React.createElement(Box, { flexDirection: "column", borderStyle: "round", borderColor: "orange", padding: 1 },
-        React.createElement(Text, { bold: true, color: "orange", underline: true }, "Configuration"),
-        vars.map((v, i) => (React.createElement(Box, { key: v.key, flexDirection: "column", marginTop: 1 },
+    return (React.createElement(Box, { flexDirection: "column", borderStyle: "double", borderColor: "magenta", padding: 1 },
+        React.createElement(Text, { bold: true, color: "magenta", underline: true }, "Configuration"),
+        React.createElement(Box, { flexDirection: "column", marginTop: 1 }, vars.map((v, i) => (React.createElement(Box, { key: v.key, flexDirection: "column", marginTop: 1 },
             React.createElement(Box, { justifyContent: "space-between" },
-                React.createElement(Text, { color: i === focusedIndex ? "orange" : "white", bold: i === focusedIndex },
+                React.createElement(Text, { color: i === focusedIndex ? "cyan" : "white", bold: i === focusedIndex },
                     i === focusedIndex ? "> " : "  ",
                     " ",
                     v.key),
                 React.createElement(Text, { color: v.required ? "red" : "gray" }, v.required ? '(Required)' : '(Optional)')),
-            React.createElement(Box, { borderStyle: "single", borderColor: i === focusedIndex ? "green" : "gray", marginLeft: 2 },
-                React.createElement(Text, { color: values[v.key] ? "white" : "gray" }, values[v.key] || (v.defaultValue ? `${v.defaultValue} (default)` : ' '))),
-            i === focusedIndex && v.defaultValue && (React.createElement(Box, { marginLeft: 2 },
-                React.createElement(Text, { color: "cyan" },
+            React.createElement(Box, { borderStyle: "single", borderColor: i === focusedIndex ? "cyan" : "gray", marginLeft: 2, paddingX: 1 }, i === focusedIndex ? (React.createElement(TextInput, { value: values[v.key] || '', onChange: (val) => setValues({ ...values, [v.key]: val }), placeholder: v.defaultValue })) : (React.createElement(Text, { color: values[v.key] ? "white" : "gray" }, values[v.key] || (v.defaultValue ? `${v.defaultValue}` : '')))),
+            i === focusedIndex && v.defaultValue && (React.createElement(Box, { marginLeft: 2, marginTop: 0 },
+                React.createElement(Text, { color: "yellow", dimColor: true },
                     "\u2728 Magic Value: ",
-                    v.defaultValue)))))),
+                    v.defaultValue))))))),
         React.createElement(Box, { marginTop: 2, justifyContent: "center" },
-            React.createElement(Text, { color: focusedIndex === vars.length ? "black" : "green", backgroundColor: focusedIndex === vars.length ? "green" : undefined }, "[ DEPLOY NOW ]"))));
+            React.createElement(Box, { borderStyle: focusedIndex === vars.length ? "round" : undefined, borderColor: "green", paddingX: 2 },
+                React.createElement(Text, { color: focusedIndex === vars.length ? "green" : "gray", bold: focusedIndex === vars.length }, "[ DEPLOY NOW ]")))));
 };
 export default EnvForm;

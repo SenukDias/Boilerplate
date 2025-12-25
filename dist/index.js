@@ -20,4 +20,6 @@ const cli = meow(`
         }
     }
 });
-render(React.createElement(App, null));
+// Run in alternate buffer mode (fullscreen) to prevent scrolling issues
+// @ts-ignore
+render(React.createElement(App, null), { alternateBuffer: true });

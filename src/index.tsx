@@ -22,4 +22,6 @@ const cli = meow(`
 	}
 });
 
-render(<App />);
+// Run in alternate buffer mode (fullscreen) to prevent scrolling issues
+// @ts-ignore
+render(<App />, { alternateBuffer: true });

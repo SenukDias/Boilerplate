@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Text, useInput } from 'ink';
+import TextInput from 'ink-text-input';
 import { EnvVar } from '../lib/env.js';
 
 interface EnvFormProps {
@@ -20,7 +21,7 @@ const EnvForm: React.FC<EnvFormProps> = ({ vars, onSubmit, onCancel }) => {
         setValues(initial);
     }, [vars]);
 
-    useInput((input: string, key: any) => {
+    useInput((input, key) => {
         if (key.escape) {
             onCancel();
             return;
@@ -37,54 +38,67 @@ const EnvForm: React.FC<EnvFormProps> = ({ vars, onSubmit, onCancel }) => {
         if (key.return) {
             if (focusedIndex === vars.length) {
                 onSubmit(values);
-            }
-        }
-
-        if (focusedIndex < vars.length && !key.ctrl && !key.meta && !key.return && !key.upArrow && !key.downArrow) {
-            const currentVar = vars[focusedIndex];
-            const currentVal = values[currentVar.key] || '';
-
-            if (key.backspace || key.delete) {
-                setValues({ ...values, [currentVar.key]: currentVal.slice(0, -1) });
             } else {
-                setValues({ ...values, [currentVar.key]: currentVal + input });
+                // Move to next field on Enter
+                setFocusedIndex(prev => Math.min(vars.length, prev + 1));
             }
         }
     });
 
     return (
-        <Box flexDirection="column" borderStyle="round" borderColor="orange" padding={1}>
-            <Text bold color="orange" underline>Configuration</Text>
-            {vars.map((v, i) => (
-                <Box key={v.key} flexDirection="column" marginTop={1}>
-                    <Box justifyContent="space-between">
-                        <Text color={i === focusedIndex ? "orange" : "white"} bold={i === focusedIndex}>
-                            {i === focusedIndex ? "> " : "  "} {v.key}
-                        </Text>
-                        <Text color={v.required ? "red" : "gray"}>
-                            {v.required ? '(Required)' : '(Optional)'}
-                        </Text>
-                    </Box>
-                    <Box borderStyle="single" borderColor={i === focusedIndex ? "green" : "gray"} marginLeft={2}>
-                        <Text color={values[v.key] ? "white" : "gray"}>
-                            {values[v.key] || (v.defaultValue ? `${v.defaultValue} (default)` : ' ')}
-                        </Text>
-                    </Box>
-                    {i === focusedIndex && v.defaultValue && (
-                        <Box marginLeft={2}>
-                            <Text color="cyan">✨ Magic Value: {v.defaultValue}</Text>
+        <Box flexDirection="column" borderStyle="double" borderColor="magenta" padding={1}>
+            <Text bold color="magenta" underline>Configuration</Text>
+            <Box flexDirection="column" marginTop={1}>
+                {vars.map((v, i) => (
+                    <Box key={v.key} flexDirection="column" marginTop={1}>
+                        <Box justifyContent="space-between">
+                            <Text color={i === focusedIndex ? "cyan" : "white"} bold={i === focusedIndex}>
+                                {i === focusedIndex ? "> " : "  "} {v.key}
+                            </Text>
+                            <Text color={v.required ? "red" : "gray"}>
+                                {v.required ? '(Required)' : '(Optional)'}
+                            </Text>
                         </Box>
-                    )}
-                </Box>
-            ))}
+                        <Box
+                            borderStyle="single"
+                            borderColor={i === focusedIndex ? "cyan" : "gray"}
+                            marginLeft={2}
+                            paddingX={1}
+                        >
+                            {i === focusedIndex ? (
+                                <TextInput
+                                    value={values[v.key] || ''}
+                                    onChange={(val) => setValues({ ...values, [v.key]: val })}
+                                    placeholder={v.defaultValue}
+                                />
+                            ) : (
+                                <Text color={values[v.key] ? "white" : "gray"}>
+                                    {values[v.key] || (v.defaultValue ? `${v.defaultValue}` : '')}
+                                </Text>
+                            )}
+                        </Box>
+                        {i === focusedIndex && v.defaultValue && (
+                            <Box marginLeft={2} marginTop={0}>
+                                <Text color="yellow" dimColor>✨ Magic Value: {v.defaultValue}</Text>
+                            </Box>
+                        )}
+                    </Box>
+                ))}
+            </Box>
 
             <Box marginTop={2} justifyContent="center">
-                <Text
-                    color={focusedIndex === vars.length ? "black" : "green"}
-                    backgroundColor={focusedIndex === vars.length ? "green" : undefined}
+                <Box
+                    borderStyle={focusedIndex === vars.length ? "round" : undefined}
+                    borderColor="green"
+                    paddingX={2}
                 >
-                    [ DEPLOY NOW ]
-                </Text>
+                    <Text
+                        color={focusedIndex === vars.length ? "green" : "gray"}
+                        bold={focusedIndex === vars.length}
+                    >
+                        [ DEPLOY NOW ]
+                    </Text>
+                </Box>
             </Box>
         </Box>
     );

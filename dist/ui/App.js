@@ -8,6 +8,7 @@ import { deployLab, stopLab, getLabStatus } from '../lib/docker.js';
 import { setupLabLocally } from '../lib/downloader.js';
 import EnvForm from './EnvForm.js';
 import Header from './Header.js';
+import IntroAnimation from './IntroAnimation.js';
 // Featured Labs IDs
 const FEATURED_IDS = [
     'home-assistant',
@@ -119,6 +120,8 @@ const GROUPS = [
 const App = () => {
     const { exit } = useApp();
     const [labs, setLabs] = useState([]);
+    // Intro State
+    const [showIntro, setShowIntro] = useState(true);
     // View State
     const [view, setView] = useState('groups');
     // Group Selection State
@@ -135,9 +138,42 @@ const App = () => {
     const [deployError, setDeployError] = useState(null);
     const [containerStatus, setContainerStatus] = useState([]);
     const [downloadStatus, setDownloadStatus] = useState('');
+    // App Status State
+    const [appStatuses, setAppStatuses] = useState({});
+    const [focusArea, setFocusArea] = useState('groups');
+    const [activeAppIndex, setActiveAppIndex] = useState(0);
+    // Grid Pagination State
+    const [groupScrollOffset, setGroupScrollOffset] = useState(0);
+    const VISIBLE_ROWS = 3;
+    const COLUMNS = 2;
+    const VISIBLE_ITEMS = VISIBLE_ROWS * COLUMNS;
     useEffect(() => {
         getLabs().then(setLabs);
     }, []);
+    // Initial Status Check
+    useEffect(() => {
+        const checkAllStatuses = async () => {
+            const statusMap = {};
+            const installed = labs.filter(l => fs.existsSync(l.path));
+            for (const lab of installed) {
+                try {
+                    const status = await getLabStatus(lab.path);
+                    statusMap[lab.id] = status;
+                }
+                catch (e) {
+                    console.error(`Failed to check status for ${lab.name}`, e);
+                }
+            }
+            setAppStatuses(statusMap);
+        };
+        if (labs.length > 0) {
+            checkAllStatuses();
+            const interval = setInterval(checkAllStatuses, 10000);
+            return () => clearInterval(interval);
+        }
+    }, [labs]);
+    // Helper: Get installed labs
+    const installedLabs = React.useMemo(() => labs.filter(l => fs.existsSync(l.path)), [labs]);
     // Helper: Get labs for current active group
     const currentGroupLabs = React.useMemo(() => {
         if (!activeGroup)
@@ -149,7 +185,7 @@ const App = () => {
         return filtered.sort((a, b) => a.name.localeCompare(b.name));
     }, [activeGroup, labs, searchQuery]);
     useInput((input, key) => {
-        if (view === 'deploying' || view === 'downloading')
+        if (showIntro || view === 'deploying' || view === 'downloading')
             return;
         // Global Back Navigation
         if (key.escape) {
@@ -163,6 +199,9 @@ const App = () => {
             else if (view === 'details' || view === 'config') {
                 setView('list');
             }
+            else if (view === 'manage') {
+                setView('groups');
+            }
             else {
                 setView('list');
             }
@@ -170,19 +209,67 @@ const App = () => {
         }
         // --- GROUP VIEW NAVIGATION ---
         if (view === 'groups') {
-            const columns = 2; // Simple grid
-            if (key.upArrow)
-                setSelectedGroupIndex(prev => Math.max(0, prev - columns));
-            if (key.downArrow)
-                setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + columns));
-            if (key.leftArrow)
-                setSelectedGroupIndex(prev => Math.max(0, prev - 1));
-            if (key.rightArrow)
-                setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + 1));
-            if (key.return) {
-                setActiveGroup(GROUPS[selectedGroupIndex]);
-                setSelectedLabIndex(0);
-                setView('list');
+            if (focusArea === 'groups') {
+                if (key.upArrow) {
+                    if (selectedGroupIndex < COLUMNS) {
+                        // If at top row, move to apps if any exist
+                        if (installedLabs.length > 0) {
+                            setFocusArea('apps');
+                            setActiveAppIndex(0);
+                        }
+                    }
+                    else {
+                        const newIndex = Math.max(0, selectedGroupIndex - COLUMNS);
+                        setSelectedGroupIndex(newIndex);
+                        // Check if we need to scroll up
+                        if (newIndex < groupScrollOffset * COLUMNS) {
+                            setGroupScrollOffset(Math.max(0, groupScrollOffset - 1));
+                        }
+                    }
+                }
+                if (key.downArrow) {
+                    const newIndex = Math.min(GROUPS.length - 1, selectedGroupIndex + COLUMNS);
+                    setSelectedGroupIndex(newIndex);
+                    // Check if we need to scroll down
+                    const currentRow = Math.floor(newIndex / COLUMNS);
+                    const lastVisibleRow = groupScrollOffset + VISIBLE_ROWS - 1;
+                    if (currentRow > lastVisibleRow) {
+                        setGroupScrollOffset(groupScrollOffset + 1);
+                    }
+                }
+                if (key.leftArrow)
+                    setSelectedGroupIndex(prev => Math.max(0, prev - 1));
+                if (key.rightArrow)
+                    setSelectedGroupIndex(prev => Math.min(GROUPS.length - 1, prev + 1));
+                if (key.return) {
+                    setActiveGroup(GROUPS[selectedGroupIndex]);
+                    setSelectedLabIndex(0);
+                    setView('list');
+                }
+            }
+            else if (focusArea === 'apps') {
+                // Navigation within active apps
+                if (key.leftArrow)
+                    setActiveAppIndex(prev => Math.max(0, prev - 1));
+                if (key.rightArrow)
+                    setActiveAppIndex(prev => Math.min(installedLabs.length - 1, prev + 1));
+                if (key.downArrow) {
+                    // Move back to groups
+                    setFocusArea('groups');
+                    const firstVisible = groupScrollOffset * COLUMNS;
+                    // Ensure selection is visible
+                    if (selectedGroupIndex < firstVisible || selectedGroupIndex >= firstVisible + VISIBLE_ITEMS) {
+                        setSelectedGroupIndex(firstVisible);
+                    }
+                }
+                if (key.return) {
+                    const lab = installedLabs[activeAppIndex];
+                    if (lab) {
+                        setSelectedLab(lab);
+                        setView('manage');
+                        getLabStatus(lab.path).then(setContainerStatus);
+                    }
+                }
             }
         }
         // --- LIST VIEW NAVIGATION ---
@@ -194,23 +281,29 @@ const App = () => {
             if (key.return) {
                 if (currentGroupLabs[selectedLabIndex]) {
                     setSelectedLab(currentGroupLabs[selectedLabIndex]);
-                    // Check if installed
                     const lab = currentGroupLabs[selectedLabIndex];
                     if (fs.existsSync(lab.path)) {
                         prepareConfig(lab);
                     }
                     else {
-                        startDownload(lab); // Auto-download on enter if not present
+                        startDownload(lab);
                     }
                 }
             }
         }
         // --- ACTIVITY VIEW ---
-        if (view === 'active' || view === 'details') {
-            if (input === 's' && selectedLab && fs.existsSync(selectedLab.path)) {
-                stopLab(selectedLab.path, (log) => setLogs(prev => [...prev.slice(-50), log]))
-                    .then(() => setLogs(prev => [...prev, 'Stopped.']))
+        if (view === 'active' || view === 'details' || view === 'manage') {
+            const lab = selectedLab;
+            if (input === 's' && lab && fs.existsSync(lab.path)) {
+                stopLab(lab.path, (log) => setLogs(prev => [...prev.slice(-50), log]))
+                    .then(() => {
+                    setLogs(prev => [...prev, 'Stopped.']);
+                    getLabStatus(lab.path).then(setContainerStatus);
+                })
                     .catch(e => setLogs(prev => [...prev, e.message]));
+            }
+            if (input === 'r' && lab) {
+                prepareConfig(lab);
             }
         }
     });
@@ -221,8 +314,6 @@ const App = () => {
             setDownloadStatus(`Fetching files from remote repository...`);
             await setupLabLocally(lab.category, lab.id, lab.files);
             setDownloadStatus('Download complete!');
-            setDownloadStatus('Download complete!');
-            // Short delay to show success
             await new Promise(resolve => setTimeout(resolve, 1000));
             prepareConfig(lab);
         }
@@ -265,30 +356,54 @@ const App = () => {
             setView('details');
         }
     };
+    if (showIntro) {
+        return React.createElement(IntroAnimation, { onComplete: () => setShowIntro(false) });
+    }
     if (labs.length === 0)
         return React.createElement(Text, null, "Loading Labs Catalog...");
     return (React.createElement(Box, { flexDirection: "column", padding: 1, borderStyle: "round", borderColor: "green" },
         React.createElement(Header, null),
         view === 'groups' && (React.createElement(Box, { flexDirection: "column" },
-            React.createElement(Box, { marginBottom: 1, borderStyle: "single", borderColor: "cyan", flexDirection: "column", paddingX: 1 },
-                React.createElement(Text, { bold: true, color: "cyan" }, "YOUR ACTIVE APPS:"),
-                React.createElement(Box, { flexDirection: "row", flexWrap: "wrap", marginTop: 0 }, labs.filter(l => fs.existsSync(l.path)).length > 0 ? (labs.filter(l => fs.existsSync(l.path)).map(lab => (React.createElement(Box, { key: lab.id, marginRight: 2 },
-                    React.createElement(Text, { color: "green" },
-                        "\u2714 ",
-                        lab.name))))) : (React.createElement(Text, { dimColor: true, italic: true }, "No apps installed yet.")))),
-            React.createElement(Box, { marginBottom: 1 },
-                React.createElement(Text, { bold: true, underline: true }, "Select a Garden Patch:")),
-            React.createElement(Box, { flexDirection: "row", flexWrap: "wrap" }, GROUPS.map((group, i) => {
-                const isSelected = i === selectedGroupIndex;
-                return (React.createElement(Box, { key: group.id, width: "50%" // Grid 2 columns
-                    , padding: 1, borderStyle: isSelected ? "double" : "single", borderColor: isSelected ? group.color : "gray" },
-                    React.createElement(Box, { flexDirection: "column", marginLeft: 1 },
-                        React.createElement(Text, { bold: true, color: group.color },
-                            group.icon,
+            React.createElement(Box, { marginBottom: 1, borderStyle: focusArea === 'apps' ? "double" : "single", borderColor: focusArea === 'apps' ? "cyan" : "gray", flexDirection: "column", paddingX: 1 },
+                React.createElement(Text, { bold: true, color: focusArea === 'apps' ? "cyan" : "gray" },
+                    "YOUR ACTIVE APPS (",
+                    installedLabs.length,
+                    "):"),
+                React.createElement(Box, { flexDirection: "row", flexWrap: "wrap", marginTop: 1 }, installedLabs.length > 0 ? (installedLabs.map((lab, i) => {
+                    const status = appStatuses[lab.id] || [];
+                    const isRunning = status.some(s => s.state.startsWith('running'));
+                    const isSelected = focusArea === 'apps' && i === activeAppIndex;
+                    return (React.createElement(Box, { key: lab.id, marginRight: 2, padding: 1, borderStyle: isSelected ? "round" : "single", borderColor: isSelected ? "yellow" : "green" },
+                        React.createElement(Text, { color: isRunning ? "green" : "red" }, isRunning ? "●" : "○"),
+                        React.createElement(Text, { bold: true, color: isSelected ? "yellow" : "white" },
                             " ",
-                            group.label),
-                        React.createElement(Text, { dimColor: true }, group.description))));
-            })),
+                            lab.name)));
+                })) : (React.createElement(Text, { dimColor: true, italic: true }, "No apps installed yet. Plant some seeds below!"))),
+                focusArea === 'apps' && (React.createElement(Box, { marginTop: 1 },
+                    React.createElement(Text, { dimColor: true }, "Enter to Manage | Arrows to Navigate | Down to Categories")))),
+            React.createElement(Box, { marginBottom: 1, justifyContent: "space-between", width: "100%" },
+                React.createElement(Text, { bold: true, underline: true, color: focusArea === 'groups' ? "white" : "gray" }, "Select a Garden Patch:"),
+                React.createElement(Text, { dimColor: true },
+                    selectedGroupIndex + 1,
+                    " / ",
+                    GROUPS.length)),
+            React.createElement(Box, { flexDirection: "column" },
+                groupScrollOffset > 0 && (React.createElement(Box, { justifyContent: "center", marginBottom: 0 },
+                    React.createElement(Text, { color: "gray" }, "\u25B2 More \u25B2"))),
+                React.createElement(Box, { flexDirection: "row", flexWrap: "wrap" }, GROUPS.slice(groupScrollOffset * COLUMNS, (groupScrollOffset + VISIBLE_ROWS) * COLUMNS).map((group, i) => {
+                    const realIndex = (groupScrollOffset * COLUMNS) + i;
+                    const isSelected = focusArea === 'groups' && realIndex === selectedGroupIndex;
+                    return (React.createElement(Box, { key: group.id, width: "50%" // Grid 2 columns
+                        , padding: 1, borderStyle: isSelected ? "double" : "single", borderColor: isSelected ? group.color : "gray" },
+                        React.createElement(Box, { flexDirection: "column", marginLeft: 1 },
+                            React.createElement(Text, { bold: true, color: group.color },
+                                group.icon,
+                                " ",
+                                group.label),
+                            React.createElement(Text, { dimColor: true }, group.description))));
+                })),
+                ((groupScrollOffset + VISIBLE_ROWS) * COLUMNS) < GROUPS.length && (React.createElement(Box, { justifyContent: "center", marginTop: 0 },
+                    React.createElement(Text, { color: "gray" }, "\u25BC More \u25BC")))),
             React.createElement(Box, { marginTop: 1 },
                 React.createElement(Text, { dimColor: true }, "Use Arrows to explore, Enter to visit.")))),
         view === 'list' && activeGroup && (React.createElement(Box, { flexDirection: "column" },
@@ -327,8 +442,10 @@ const App = () => {
             React.createElement(Text, { color: "cyan", bold: true }, "Planting Seeds... (Downloading)"),
             React.createElement(Text, null, downloadStatus))),
         view === 'config' && (React.createElement(EnvForm, { vars: envVars, onSubmit: startDeploy, onCancel: () => setView('list') })),
-        (view === 'deploying' || view === 'active') && (React.createElement(Box, { flexDirection: "column" },
-            React.createElement(Text, { color: "orange", bold: true }, view === 'deploying' ? 'Deploying...' : 'Deployment Successful!'),
+        (view === 'deploying' || view === 'active' || view === 'manage') && (React.createElement(Box, { flexDirection: "column" },
+            React.createElement(Text, { color: "orange", bold: true }, view === 'deploying' ? 'Deploying...' :
+                view === 'active' ? 'Deployment Successful!' :
+                    `Managing ${selectedLab?.name}`),
             containerStatus.map((c, i) => (React.createElement(Box, { key: i, flexDirection: "column", marginTop: 1, borderStyle: "single", borderColor: "green", padding: 1 },
                 React.createElement(Text, { color: "green", bold: true },
                     "\u2714 ",
@@ -343,7 +460,7 @@ const App = () => {
                 React.createElement(Text, { underline: true }, "Logs:"),
                 logs.slice(-5).map((log, i) => React.createElement(Text, { key: i }, log))),
             React.createElement(Box, { marginTop: 1 },
-                React.createElement(Text, { dimColor: true }, "Press S to Stop | Esc to Back")))),
+                React.createElement(Text, { dimColor: true }, "Press S to Stop | R to Reconfigure | Esc to Back")))),
         view === 'details' && deployError && (React.createElement(Box, { flexDirection: "column", borderColor: "red", borderStyle: "double", padding: 1 },
             React.createElement(Text, { bold: true, color: "red" }, "Error Occurred:"),
             React.createElement(Text, null, deployError),
